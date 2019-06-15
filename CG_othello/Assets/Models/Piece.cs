@@ -4,8 +4,6 @@ namespace Models
 {
     public class Piece : MonoBehaviour
     {
-        
-        
         //When the mouse hovers over the GameObject, it turns to this color (red)
         readonly Color m_MouseOverColor = Color.red;
 
