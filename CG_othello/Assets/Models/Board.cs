@@ -1,6 +1,6 @@
 namespace Models
 {
-    public class Field
+    public class Board 
     {
         
     }
