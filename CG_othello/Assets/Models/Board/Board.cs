@@ -3,7 +3,6 @@ using UnityEngine;
 
 namespace Models
 {
-    
     public class Board : MonoBehaviour
     {
         private void OnMouseOver()
