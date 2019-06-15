@@ -1,6 +1,6 @@
 using System;
 
-namespace Models
+namespace Models.Player
 {
     public class ComputerPlayer : Player
     {
