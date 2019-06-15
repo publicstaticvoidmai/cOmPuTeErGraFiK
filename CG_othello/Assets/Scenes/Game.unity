@@ -3682,6 +3682,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27f3a4ba45a64ff686a7018108c827cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_OriginalColor:
+    r: 0
+    g: 0
+    b: 0
+    a: 0
+  m_Renderer: {fileID: 0}
 --- !u!1001 &1274546642
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4240,6 +4246,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27f3a4ba45a64ff686a7018108c827cd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_OriginalColor:
+    r: 0
+    g: 0
+    b: 0
+    a: 0
+  m_Renderer: {fileID: 0}
 --- !u!1001 &1577739998
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4699,7 +4711,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1654972776}
-  - component: {fileID: 1654972777}
+  - component: {fileID: 1654972778}
   m_Layer: 0
   m_Name: Board
   m_TagString: Untagged
@@ -4784,18 +4796,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1654972777
-MonoBehaviour:
+--- !u!156049354 &1654972778
+Grid:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1654972775}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 27f3a4ba45a64ff686a7018108c827cd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  m_CellSize: {x: 1, y: 1, z: 1}
+  m_CellGap: {x: 0, y: 0, z: 0}
+  m_CellLayout: 0
+  m_CellSwizzle: 1
 --- !u!1001 &1671918028
 PrefabInstance:
   m_ObjectHideFlags: 0
