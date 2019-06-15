@@ -3,22 +3,20 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SliderDifficulty : MonoBehaviour
+public class DifficultyTextUpdate : MonoBehaviour
 {
 
-    Slider slider;
-
+    public Text text;
 
     // Start is called before the first frame update
     void Start()
     {
-        PlayerPrefs.SetFloat("Difficulty", slider.value);
-        
+        text = GetComponent<Text>();
     }
 
     // Update is called once per frame
-    void Update()
+    public void TextUpdate(float value)
     {
-        
+        text.text = value.ToString();
     }
 }
