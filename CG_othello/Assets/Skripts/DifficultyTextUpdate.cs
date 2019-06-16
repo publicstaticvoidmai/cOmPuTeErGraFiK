@@ -17,6 +17,7 @@ public class DifficultyTextUpdate : MonoBehaviour
     // Update is called once per frame
     public void TextUpdate(float value)
     {
+        PlayerPrefs.SetFloat("Difficulty", value);
         text.text = value.ToString();
     }
 }
