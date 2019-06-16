@@ -6,7 +6,8 @@ namespace Models.Player
     {
         public Tuple<int, int, PlayerColor> GetNextMove()
         {
-            throw new NotImplementedException();
+
         }
+
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Models.Board
@@ -19,6 +20,11 @@ namespace Models.Board
             m_Renderer = GetComponent<MeshRenderer>();
             //Fetch the original color of the GameObject
             m_OriginalColor = m_Renderer.material.color;
+        }
+
+        private void OnMouseDown()
+        {
+            
         }
 
         void OnMouseOver()
