@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Models.Player
 {
-  /*  public class HumanPlayer : Player
+    public class HumanPlayer : Player
     {
         private int? _nextX;
         private int? _nextZ;
@@ -50,5 +50,5 @@ namespace Models.Player
             _nextZ = z;
         }
 
-    }*/
+    }
 }
