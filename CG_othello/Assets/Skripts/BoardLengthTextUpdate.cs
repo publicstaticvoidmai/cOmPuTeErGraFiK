@@ -20,17 +20,17 @@ public class BoardLengthTextUpdate : MonoBehaviour
         {
             case 1:
                 text.text = 6.ToString();
-                PlayerPrefs.SetFloat("BoardLength", 6);
+                PlayerPrefs.SetInt("BoardLength", 6);
                 break;
             
             case 2:
                 text.text = 8.ToString();
-                PlayerPrefs.SetFloat("BoardLength", 8);
+                PlayerPrefs.SetInt("BoardLength", 8);
                 break;
             
             case 3:
                 text.text = 10.ToString();
-                PlayerPrefs.SetFloat("BoardLength", 10);
+                PlayerPrefs.SetInt("BoardLength", 10);
                 break;
         }
     }
