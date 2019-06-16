@@ -1,4 +1,4 @@
-using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Models.Board
@@ -6,37 +6,58 @@ namespace Models.Board
     public class Tile : MonoBehaviour
     {
         //When the mouse hovers over the GameObject, it turns to this color (red)
-        Color m_MouseOverColor = Color.green;
+        Color _MouseOverColor = Color.green;
 
-        //This stores the GameObject’s original color
-        Color m_OriginalColor;
+        private int _x;
+        private int _z;
 
-        //Get the GameObject’s mesh renderer to access the GameObject’s material and color
-        MeshRenderer m_Renderer;
-
+        Color _OriginalColor;
+        MeshRenderer _Renderer;
+        
         void Start()
         {
-            //Fetch the mesh renderer component from the GameObject
-            m_Renderer = GetComponent<MeshRenderer>();
-            //Fetch the original color of the GameObject
-            m_OriginalColor = m_Renderer.material.color;
+            _Renderer = GetComponent<MeshRenderer>();
+            _OriginalColor = _Renderer.material.color;
+            var position = transform.position;
+            _x = (int) position.x;
+            _z = (int) position.z;
         }
-
+        
         private void OnMouseDown()
         {
-            
+            if (IsPlayable()) Game.Instance.white.SetNextMove(_x, _z);
         }
 
         void OnMouseOver()
-        {
-            // Change the color of the GameObject to red when the mouse is over GameObject
-            m_Renderer.material.color = m_MouseOverColor;
+        { 
+            if (IsPlayable()) _Renderer.material.color = _MouseOverColor;
         }
 
         void OnMouseExit()
         {
-            // Reset the color of the GameObject back to normal
-            m_Renderer.material.color = m_OriginalColor;
+            if (IsPlayable()) _Renderer.material.color = _OriginalColor;
+        }
+
+        private bool IsPlayable()
+        {
+            if (Game.Instance.State[_x, _z] == null) return false;
+            
+            List<Move> valid = FilteredForCurrentPlayer(Game.Instance.ValidMoves);
+            
+            Piece potential = new Piece(_x, _z, Game.Instance.GetCurrentColor());
+            return valid.Find(move => move.Origin.Equals(potential)) != null;
+        }
+
+        private static List<Move> FilteredForCurrentPlayer(List<Move> moves)
+        {
+            PlayerColor currentColor = Game.Instance.GetCurrentColor();
+            return moves
+                .FindAll(move => move.Origin.Color.Equals(currentColor));
+        }
+
+        private bool IsPlacedOnThis(Piece piece)
+        {
+            return piece.x == _x && piece.z == _z;
         }
     }
 }

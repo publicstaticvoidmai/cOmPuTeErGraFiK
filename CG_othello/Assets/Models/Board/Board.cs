@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace Models.Board
@@ -6,12 +7,12 @@ namespace Models.Board
     {
         public GameObject PlacePiece(int x, int z, GameObject pref)
         {
-            return 
+            throw new MethodAccessException();
         }
         
         private void FlipPieces(int originX, int originZ, int destX, int destZ, PlayerColor color)
         {
-            
+            throw new MethodAccessException();
         }
     }
 }

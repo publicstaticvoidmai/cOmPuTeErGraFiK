@@ -1,21 +1,27 @@
-using System;
+using System.Collections.Generic;
 using Models.Board;
+using Models.Player;
 using UnityEngine;
 
 namespace Models
 {
     public class Game : MonoBehaviour
     {
-        public static Game Instance;
-
-        private const int BoardLength = 8;
-
-        private readonly Piece[,] _state = new Piece[BoardLength, BoardLength];
-        private bool _isWhitesTurn;
+        private static readonly int BoardLength = PlayerPrefs.GetInt("BoardLength");
         
         public GameObject whitePref;
         public GameObject blackPref;
 
+        private bool _isWhitesTurn;
+
+        public readonly Piece[,] State = new Piece[BoardLength, BoardLength];
+        public readonly List<Move> ValidMoves = new List<Move>();
+        
+        public ComputerPlayer black = new ComputerPlayer(PlayerColor.Black);
+        public HumanPlayer white = new HumanPlayer(PlayerColor.White);
+
+
+        public static Game Instance;
         public void Awake()
         {
             Instance = this;
@@ -28,7 +34,15 @@ namespace Models
 
         public void Update()
         {
-            throw new NotImplementedException();
+            var nextHumanMove = white.GetNextMove(); // nullable
+            if (nextHumanMove == null) return;
+            
+            PlacePiece(nextHumanMove.Item1, nextHumanMove.Item2, nextHumanMove.Item3);
+        }
+
+        public PlayerColor GetCurrentColor()
+        {
+            return _isWhitesTurn ? PlayerColor.White : PlayerColor.Black;
         }
 
 
@@ -48,7 +62,7 @@ namespace Models
             GameObject pref = GetPrefForColor(color);
             GameObject piece = Instantiate(pref, new Vector3(x, 0, z), Quaternion.identity);
             
-            _state[x, z] = piece.GetComponent<Piece>();
+            State[x, z] = piece.GetComponent<Piece>();
         }
 
         private void FlipPieces(int originX, int originZ, int destX, int destZ, PlayerColor color)
@@ -60,7 +74,7 @@ namespace Models
         {
             bool IsValid(int bound) => bound <= BoardLength - 1 && bound >= 0;
 
-            return (IsValid(x) && IsValid(z)) ? _state[x, z] : null;
+            return (IsValid(x) && IsValid(z)) ? State[x, z] : null;
         }
 
         private GameObject GetPrefForColor(PlayerColor color)
