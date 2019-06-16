@@ -7,12 +7,12 @@ namespace Models.Board
     {
         public GameObject PlacePiece(int x, int z, GameObject pref)
         {
-            throw new MethodAccessException();
+            throw new NotImplementedException();
         }
         
         private void FlipPieces(int originX, int originZ, int destX, int destZ, PlayerColor color)
         {
-            throw new MethodAccessException();
+            throw new NotImplementedException();
         }
     }
 }

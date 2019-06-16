@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -14,7 +15,7 @@ namespace Models.Board
         Color _OriginalColor;
         MeshRenderer _Renderer;
         
-        void Start()
+        public void Start()
         {
             _Renderer = GetComponent<MeshRenderer>();
             _OriginalColor = _Renderer.material.color;
@@ -23,28 +24,27 @@ namespace Models.Board
             _z = (int) position.z;
         }
         
-        private void OnMouseDown()
+        public void OnMouseDown()
         {
-            if (IsPlayable()) Game.Instance.white.SetNextMove(_x, _z);
+            if (IsPlayable()) Game.Instance.GetCurrentPlayer().SetNextMove(_x, _z);
         }
 
-        void OnMouseOver()
-        { 
+        public void OnMouseOver()
+        {
             if (IsPlayable()) _Renderer.material.color = _MouseOverColor;
         }
 
-        void OnMouseExit()
+        public void OnMouseExit()
         {
             if (IsPlayable()) _Renderer.material.color = _OriginalColor;
         }
 
         private bool IsPlayable()
         {
-            if (Game.Instance.State[_x, _z] == null) return false;
-            
+            // TODO Check if field is occupado
             List<Move> valid = FilteredForCurrentPlayer(Game.Instance.ValidMoves);
-            
-            Piece potential = new Piece(_x, _z, Game.Instance.GetCurrentColor());
+            Piece potential = gameObject.AddComponent<Piece>();
+            potential.Init(_x, _z, Game.Instance.GetCurrentColor());
             return valid.Find(move => move.Origin.Equals(potential)) != null;
         }
 
@@ -57,7 +57,7 @@ namespace Models.Board
 
         private bool IsPlacedOnThis(Piece piece)
         {
-            return piece.x == _x && piece.z == _z;
+            return piece.X == _x && piece.Z == _z;
         }
     }
 }

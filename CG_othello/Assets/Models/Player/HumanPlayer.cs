@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Models.Board;
+using UnityEngine;
 
 namespace Models.Player
 {
@@ -9,11 +10,21 @@ namespace Models.Player
         private int? _nextX;
         private int? _nextZ;
 
-        public readonly PlayerColor Color;
+        private PlayerColor _color;
 
-        public HumanPlayer(PlayerColor color)
+        public PlayerColor Color { get => _color; }
+
+        private Piece Piece1;
+
+        public HumanPlayer Init(PlayerColor color)
         {
-            Color = color;
+            _color = color;
+            return this;
+        }
+
+        private void Start()
+        {
+            Piece1 = gameObject.AddComponent<Piece>();
         }
 
         public override Tuple<int, int, PlayerColor> GetNextMove()
@@ -33,7 +44,7 @@ namespace Models.Player
                 .FindAll(move => move.Origin.Color.Equals(Color));
         }
 
-        public void SetNextMove(int x, int z)
+        public override void SetNextMove(int x, int z)
         {
             _nextX = x;
             _nextZ = z;

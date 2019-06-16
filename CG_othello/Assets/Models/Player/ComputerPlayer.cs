@@ -6,21 +6,36 @@ namespace Models.Player
 {
     public class ComputerPlayer : Player
     {
-        public readonly PlayerColor Color;
-
-        public ComputerPlayer(PlayerColor color)
+        private PlayerColor _color;
+        public PlayerColor Color
         {
-            Color = color;
+            get => _color;
+        }
+
+        public ComputerPlayer Init(PlayerColor color)
+        {
+            _color = color;
+            return this;
+        }
+
+        private void Start()
+        {
+            
         }
 
         public override Tuple<int, int, PlayerColor> GetNextMove()
         {
-            return new Tuple<int, int, PlayerColor>(1, 2, PlayerColor.Black);
+            throw new NotImplementedException();
         }
 
         public override List<Move> GetPotentialMoves()
         {
-            return new List<Move>();
+            throw new NotImplementedException();
+        }
+
+        public override void SetNextMove(int x, int z)
+        {
+            throw new NotImplementedException();
         }
     }
 }

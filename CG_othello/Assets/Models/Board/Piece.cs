@@ -6,18 +6,20 @@ namespace Models.Board
     public class Piece : MonoBehaviour
     {
         private int _x;
-        get {
-            return _x;
-            
-        }
+        public int X => _x;
+        
         private int _z;
+        public int Z => _z;
+        
         public PlayerColor Color;
         
-        public void Init(int x, int z, PlayerColor color)
+        public Piece Init(int x, int z, PlayerColor color)
         {
             _x = x;
             _z = z;
             Color = color;
+            
+            return this;
         }
 
         public override bool Equals(object other)
