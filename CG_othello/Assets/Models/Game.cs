@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Models.Board;
 using Models.Player;
 using UnityEngine;
@@ -8,34 +9,27 @@ namespace Models
 {
     public class Game : MonoBehaviour
     {
-        private int _boardLength;
-        public int BoardLength => _boardLength;
+        public int BoardLength { get; private set; }
 
         public GameObject whitePref;
         public GameObject blackPref;
 
-        private bool _isWhitesTurn;
+        public IReadOnlyList<LogicalPiece> State => _board.LogicalState;
 
-        private List<Piece> _state;
-        public List<Piece> State => _state;
-
-        private List<Move> _validMoves;
-        public List<Move> ValidMoves => _validMoves;
+        private Board.Board _board;
         
         private ComputerPlayer _black;
         private HumanPlayer _white;
         
+        public List<Move> ValidMoves { get; private set; }
+        private bool _isWhitesTurn;
+
         public static Game Instance;
+        
         public void Awake()
         {
-            _boardLength = PlayerPrefs.GetInt("BoardLength");
-            if (_boardLength < 6 || _boardLength > 10 || _boardLength % 2 != 0)
-            {
-                _boardLength = 8;
-            }
-            
-            _state = new List<Piece>(64);
-            _validMoves = new List<Move>();
+            BoardLength = PlayerPrefs.GetInt("BoardLength");
+            _board = new Board.Board(BoardLength);
             _black = gameObject.AddComponent<ComputerPlayer>().Init(PlayerColor.Black);
             _white = gameObject.AddComponent<HumanPlayer>().Init(PlayerColor.White);
             _isWhitesTurn = false;
@@ -53,7 +47,8 @@ namespace Models
             var nextHumanMove = _white.GetNextMove(); // nullable
             if (nextHumanMove == null) return;
             
-            PlacePiece(nextHumanMove.Item1, nextHumanMove.Item2, nextHumanMove.Item3);
+            // this should not be placepiece but rather applyMove
+            ApplyPieceToState(nextHumanMove.Item1, nextHumanMove.Item2, nextHumanMove.Item3);
         }
 
         public Player.Player GetCurrentPlayer()
@@ -65,50 +60,50 @@ namespace Models
         {
             return _isWhitesTurn ? PlayerColor.White : PlayerColor.Black;
         }
+        
+        public GameObject GetPrefForColor(PlayerColor color)
+        {
+            return color == PlayerColor.Black ? blackPref : whitePref;
+        }
 
 
         private void GenerateBoard()
         {
-            int middle = _boardLength / 2;
+            int middle = BoardLength / 2;
             int offMiddle = middle - 1;
             
-            PlacePiece(offMiddle, offMiddle, PlayerColor.Black);
-            PlacePiece(offMiddle, middle, PlayerColor.White);
-            PlacePiece(middle, middle, PlayerColor.Black);
-            PlacePiece(middle, offMiddle, PlayerColor.White);
+            ApplyPieceToState(offMiddle, offMiddle, PlayerColor.Black);
+            ApplyPieceToState(offMiddle, middle, PlayerColor.White);
+            ApplyPieceToState(middle, middle, PlayerColor.Black);
+            ApplyPieceToState(middle, offMiddle, PlayerColor.White);
         }
 
-        private void PlacePiece(int x, int z, PlayerColor color)
+        private ReadOnlyCollection<Piece> ApplyPieceToState(int x, int z, PlayerColor color, ReadOnlyCollection<Piece> state)
         {
+            List<Piece> newState = new List<Piece>(state);
             GameObject pref = GetPrefForColor(color);
             GameObject piece = Instantiate(pref, new Vector3(x, 0, z), Quaternion.identity);
             
-            _state.Add(piece.AddComponent<Piece>().Init(x, z, color));
+            newState.Add(piece.AddComponent<Piece>().Init(x, z, color));
+            return newState.AsReadOnly();
         }
 
-        private void FlipPieces(int originX, int originZ, int destX, int destZ, PlayerColor color)
+        private void ApplyMove(Move move)
         {
-            throw new NotImplementedException();
+            
         }
 
         private Piece GetPieceAt(int x, int z)
         {
-            bool IsValid(int bound) => bound <= _boardLength - 1 && bound >= 0;
+            bool IsValid(int bound) => bound <= BoardLength - 1 && bound >= 0;
 
-            return (IsValid(x) && IsValid(z)) ? _state.Find(piece => piece.X == x && piece.Z == z) : null;
-        }
-
-        private GameObject GetPrefForColor(PlayerColor color)
-        {
-            return color == PlayerColor.Black ? blackPref : whitePref;
+            return (IsValid(x) && IsValid(z)) ? State.Find(piece => piece.X == x && piece.Z == z) : null;
         }
 
         private void NextPlayer()
         {
             _isWhitesTurn = !_isWhitesTurn;
-            var moves = GetCurrentPlayer().GetPotentialMoves();
-            Debug.Log("Found " + moves.Count + " moves");
-            _validMoves = moves;
+            ValidMoves = GetCurrentPlayer().GetPotentialMoves();
         }
     }
 }

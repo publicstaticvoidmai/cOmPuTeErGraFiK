@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Models.Board;
-using UnityEngine;
 
 namespace Models.Player
 {
@@ -11,20 +10,12 @@ namespace Models.Player
         private int? _nextZ;
 
         private PlayerColor _color;
-
-        public PlayerColor Color { get => _color; }
-
-        private Piece Piece1;
-
+        public PlayerColor Color => _color;
+        
         public HumanPlayer Init(PlayerColor color)
         {
             _color = color;
             return this;
-        }
-
-        private void Start()
-        {
-            Piece1 = gameObject.AddComponent<Piece>();
         }
 
         public override Tuple<int, int, PlayerColor> GetNextMove()
@@ -40,8 +31,12 @@ namespace Models.Player
 
         public override List<Move> GetPotentialMoves()
         {
-            return CalculatePotentialMoves(Game.Instance.State)
-                .FindAll(move => move.Origin.Color.Equals(Color));
+            var logicalPieces = Game.Instance.State;
+            var k = CalculatePotentialMoves(logicalPieces);
+                
+            var x = k.FindAll(move => move.Origin.Color.Equals(Color));
+
+            return x;
         }
 
         public override void SetNextMove(int x, int z)

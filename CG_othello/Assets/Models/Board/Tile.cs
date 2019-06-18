@@ -43,8 +43,7 @@ namespace Models.Board
         {
             // TODO Check if field is occupado
             List<Move> valid = FilteredForCurrentPlayer(Game.Instance.ValidMoves);
-            Piece potential = gameObject.AddComponent<Piece>();
-            potential.Init(_x, _z, Game.Instance.GetCurrentColor());
+            LogicalPiece potential = new LogicalPiece(_x, _z, Game.Instance.GetCurrentColor());
             return valid.Find(move => move.Origin.Equals(potential)) != null;
         }
 

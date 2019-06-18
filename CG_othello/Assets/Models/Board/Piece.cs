@@ -5,32 +5,20 @@ namespace Models.Board
 {
     public class Piece : MonoBehaviour
     {
-        private int _x;
-        public int X => _x;
+        private LogicalPiece _underlying;
+        public int X => _underlying.X;
+        public int Z => _underlying.Z;
+        public PlayerColor Color => _underlying.Color;
         
-        private int _z;
-        public int Z => _z;
-        
-        public PlayerColor Color;
-        
-        public Piece Init(int x, int z, PlayerColor color)
+        public Piece Init(LogicalPiece piece)
         {
-            _x = x;
-            _z = z;
-            Color = color;
-            
+            _underlying = piece;
             return this;
         }
 
-        public override bool Equals(object other)
+        public LogicalPiece ToLogicalPiece()
         {
-            Piece otherPiece = other as Piece;
-            
-            return otherPiece 
-                   != null && 
-                   otherPiece._x == _x && 
-                   otherPiece._z == _z && 
-                   otherPiece.Color == Color;
+            return _underlying;
         }
     }
 }

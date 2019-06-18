@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Models.Board;
 using UnityEngine;
@@ -9,20 +10,19 @@ namespace Models.Player
 {
     public abstract class Player : MonoBehaviour
     {
-        
         public abstract Tuple<int, int, PlayerColor> GetNextMove();
         public abstract List<Move> GetPotentialMoves();
 
         public abstract void SetNextMove(int x, int z);
 
-        protected List<Move> CalculatePotentialMoves(List<Piece> state)
+        protected static List<Move> CalculatePotentialMoves(IReadOnlyList<LogicalPiece> state)
         {
             List<Move> result = new List<Move>();
 
-            foreach (Piece piece in state)
+            foreach (LogicalPiece alreadyPlacedPiece in state)
             {
-                List<Piece> directions = GetOpposingAdjacentsOf(piece, state);
-                List<Move> moves = GetMovesFrom(piece, directions, state);
+                List<LogicalPiece> directions = GetOpposingAdjacentsOf(alreadyPlacedPiece, state);
+                List<Move> moves = GetMovesFrom(alreadyPlacedPiece, directions, state);
                 
                 result.AddRange(moves);
             }
@@ -30,71 +30,71 @@ namespace Models.Player
             return result;
         }
 
-        private List<Piece> GetOpposingAdjacentsOf(Piece piece, List<Piece> state)
+        private static List<LogicalPiece> GetOpposingAdjacentsOf(LogicalPiece existingPiece, IReadOnlyList<LogicalPiece> state)
         {
-            IEnumerable<int> Range(int pos) => Enumerable.Range(pos - 1, pos + 1);
-            Piece OpposingPieceAt(int x, int z)
-            {
-                return Game.Instance.gameObject.AddComponent<Piece>().Init(x, z, piece.Color.Opposing());
-                
-            }
+            IEnumerable<int> Range(int pos) => Enumerable.Range(pos - 1, pos); // you would think that this is one too little but its not
+            LogicalPiece OpposingPieceAt(int x, int z) => new LogicalPiece(x, z, existingPiece.Color.Opposing());
 
-
-            List<Piece> directions = new List<Piece>();
-            
-            foreach (var row in Range(piece.X))
-            {
-                foreach (var column in Range(piece.Z))
-                {
-                    Piece opposingPiece = OpposingPieceAt(row, column);
-                    if (state.Contains(opposingPiece)) directions.Add(opposingPiece);
-                }
-            }
-
-            return directions;
+            return Range(existingPiece.X)
+                .SelectMany(row => 
+                    Range(existingPiece.Z), (row, col) => OpposingPieceAt(row, col))
+                .Where(state.Contains)
+                .ToList();
         }
 
-        private List<Move> GetMovesFrom(Piece origin, List<Piece> directions, List<Piece> state)
+        private static List<Move> GetMovesFrom(LogicalPiece bound, List<LogicalPiece> directions, IReadOnlyList<LogicalPiece> state)
         {
-            int DirectionFrom(int start, int end) => start.CompareTo(end);
-
             List<Move> moves = new List<Move>();
             
-            foreach (Piece adjacent in directions)
+            foreach (LogicalPiece direction in directions)
             {
-                int rowDirection = DirectionFrom(origin.X, adjacent.X);
-                int colDirection = DirectionFrom(origin.Z, adjacent.Z);
+                var (possiblePieceForMove, flippedPieces) = 
+                    GetPieceAtEndOfLineAndDistanceFrom(bound, direction, state);
 
-                int Advance(int i) => i + 0.CompareTo(i);
-                Func<int, int, Piece> GetPieceAtPosition = (row, column) => 
-                    gameObject.GetComponent<Piece>().Init(origin.X + row, origin.Z + column, origin.Color.Opposing());
-
-                int flipped = 0;
-                Piece next = GetPieceAtPosition(rowDirection, colDirection);
-
-                while (state.Contains(next))
-                {
-                    rowDirection = Advance(rowDirection);
-                    colDirection = Advance(colDirection);
-                    next = GetPieceAtPosition(rowDirection, colDirection);
-                    flipped++;
-                }
-                
-                Piece possiblePiece = gameObject.GetComponent<Piece>().Init(next.X, next.Z, origin.Color);
-
-                if (!state.Contains(possiblePiece) && InsideBounds(possiblePiece) && flipped > 0)
-                {
-                    moves.Add(new Move(origin, possiblePiece, flipped));   
-                }
+                if (
+                    !state.Contains(possiblePieceForMove) && 
+                    InsideBounds(possiblePieceForMove) && 
+                    flippedPieces > 0
+                    ) moves.Add(new Move(possiblePieceForMove, bound, flippedPieces));
             }
 
             return moves;
         }
 
-        private bool InsideBounds(Piece piece)
+        private static Tuple<LogicalPiece, int> GetPieceAtEndOfLineAndDistanceFrom(
+            LogicalPiece origin, 
+            LogicalPiece direction, 
+            IReadOnlyList<LogicalPiece> state)
         {
-            int length = Game.Instance.BoardLength;
-            bool InsideBounds(int pos) { return pos >= 0 && pos < length; }
+            int AdvanceOneStepFrom(int i) => i + i.CompareTo(0); // increment or decrement depending on the direction
+            LogicalPiece NewLogicalPieceAt(int row, int column) => 
+                new LogicalPiece(origin.X + row, origin.Z + column, origin.Color.Opposing());
+            
+            var (rowDirection, colDirection) = GetSlopeFrom(origin, direction);
+            int flipped = 0;
+            LogicalPiece next = NewLogicalPieceAt(rowDirection, colDirection);
+            
+            while (state.Contains(next))
+            {
+                rowDirection = AdvanceOneStepFrom(rowDirection);
+                colDirection = AdvanceOneStepFrom(colDirection);
+                next = NewLogicalPieceAt(rowDirection, colDirection);
+                flipped++;
+            }
+
+            return new Tuple<LogicalPiece, int>(new LogicalPiece(next.X, next.Z, origin.Color), flipped);
+        }
+
+        private static Tuple<int, int> GetSlopeFrom(LogicalPiece origin, LogicalPiece direction)
+        {
+            // this works because we know that destination and adjacent will always be at most one step apart
+            int GetDirectionFrom(int start, int end) => end.CompareTo(start);
+            return new Tuple<int, int>(GetDirectionFrom(origin.X, direction.X), GetDirectionFrom(origin.Z, direction.Z));
+        }
+
+        private static bool InsideBounds(LogicalPiece piece)
+        {
+            bool InsideBounds(int pos) { return pos >= 0 && pos < Game.Instance.BoardLength; }
             
             return InsideBounds(piece.X) && InsideBounds(piece.Z);
         }
