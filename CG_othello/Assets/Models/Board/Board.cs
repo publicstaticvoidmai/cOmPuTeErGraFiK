@@ -1,19 +1,20 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Models.Board
 {
     public class Board
     {
         public IReadOnlyList<LogicalPiece> LogicalState { get; private set; }
-        private readonly Piece[,] _physicalState;
+        private readonly GameObject[,] _physicalState;
         
         public Board(int edgeLength)
         {
             // TODO @Mai you have to get the board to have the right edgelength somewhere hereabouts
             LogicalState = new List<LogicalPiece>(edgeLength * edgeLength).AsReadOnly();
-            _physicalState = new Piece[edgeLength, edgeLength];
+            _physicalState = new GameObject[edgeLength, edgeLength];
         }
 
         public Board With(LogicalPiece piece) => _With(piece, this);
@@ -94,7 +95,7 @@ namespace Models.Board
             return new Board(currentLogicalState, currentPhysicalState);
         }
         
-        private Board(IReadOnlyList<LogicalPiece> logicalState, Piece[,] physicalState)
+        private Board(IReadOnlyList<LogicalPiece> logicalState, GameObject[,] physicalState)
         {
             LogicalState = logicalState;
             _physicalState = physicalState;
@@ -102,7 +103,9 @@ namespace Models.Board
 
         private static IReadOnlyList<LogicalPiece> AddToLogicalState(LogicalPiece piece, IReadOnlyList<LogicalPiece> state)
         {
-            return new List<LogicalPiece>(state) {piece}.AsReadOnly();
+            List<LogicalPiece> intermediateLogicalState = new List<LogicalPiece>(state);
+            intermediateLogicalState.Add(piece);
+            return intermediateLogicalState.AsReadOnly();
         }
         
         private static IReadOnlyList<LogicalPiece> RemoveFromLogicalState(LogicalPiece piece, IReadOnlyList<LogicalPiece> state)
@@ -112,30 +115,29 @@ namespace Models.Board
             return intermediateLogicalState.AsReadOnly();
         }
 
-        private static Piece[,] AddToGameObjectState(LogicalPiece piece, Piece[,] gameObjectState)
+        private static GameObject[,] AddToGameObjectState(LogicalPiece piece, GameObject[,] gameObjectState)
         {
             gameObjectState[piece.X, piece.Z] = InstantiateAsPiece(piece);
             return gameObjectState;
         }
         
-        private static Piece[,] RemoveFromGameObjectState(LogicalPiece piece, Piece[,] gameObjectState)
+        private static GameObject[,] RemoveFromGameObjectState(LogicalPiece piece, GameObject[,] gameObjectState)
         {
-            MonoBehaviour.Destroy(gameObjectState[piece.X, piece.Z]);
+            Object.Destroy(gameObjectState[piece.X, piece.Z]);
             gameObjectState[piece.X, piece.Z] = null;
             return gameObjectState;
         }
 
-        private static Piece InstantiateAsPiece(LogicalPiece piece)
+        private static GameObject InstantiateAsPiece(LogicalPiece piece)
         {
             // this has the very intended sideeffect of actually creating the Piece in the GameWorld.
             // Should be I/O but it isn't
-            return MonoBehaviour
+            return Object
                 .Instantiate(
                     Game.Instance.GetPrefForColor(piece.Color),
                     new Vector3(piece.X, 0f, piece.Z),
                     Quaternion.identity
-                )
-                .AddComponent<Piece>();
+                );
         }
     }
 }
