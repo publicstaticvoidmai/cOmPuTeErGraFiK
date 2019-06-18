@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Models.Board;
 
 namespace Models.Player
@@ -9,10 +10,10 @@ namespace Models.Player
         bool HasPassed();
 
         IReadOnlyList<Move> GetPotentialMoves();
-        List<Move> GetNextMove();
+        Task<List<Move>> GetNextMove();
         PlayerColor GetColor();
         
-        IPlayer WithCalculatedPotentialMovesFrom(IReadOnlyList<LogicalPiece> state);
+        Task<IPlayer> WithCalculatedPotentialMovesFrom(IReadOnlyList<LogicalPiece> state);
         IPlayer WithPass();
     }
 }

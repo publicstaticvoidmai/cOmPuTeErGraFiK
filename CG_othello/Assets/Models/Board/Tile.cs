@@ -26,7 +26,11 @@ namespace Models.Board
         
         public void OnMouseDown()
         {
-            if (IsPlayable()) ((HumanPlayer) Game.Instance.CurrentPlayer).SetNextMove(_x, _z);
+            if (IsPlayable())
+            {
+                HumanPlayer player = (HumanPlayer) Game.Instance.CurrentPlayer;
+                player.SetNextMove(_x, _z);
+            }
         }
 
         public void OnMouseOver()
@@ -44,9 +48,11 @@ namespace Models.Board
             IPlayer player = Game.Instance.CurrentPlayer;
             if (player is HumanPlayer)
             {
-                return player
+                return 0 < player
                     .GetPotentialMoves()
-                    .Any(move => move.Origin.X == _x && move.Origin.Z == _z);
+                    .Count(move =>
+                        move.Origin.X == _x && move.Origin.Z == _z && move.Origin.Color == player.GetColor());
+
             }
 
             return false;

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Models.Board;
 
 namespace Models.Player
@@ -20,7 +21,8 @@ namespace Models.Player
 
         public bool HasNextMove()
         {
-            return PotentialMoves.Any(move => move.Origin.Color.Equals(Color));
+            return 0 < PotentialMoves
+                       .Count(move => move.Origin.Color.Equals(Color));
         }
 
         public bool HasPassed() => _hasPassed;
@@ -29,19 +31,25 @@ namespace Models.Player
         public PlayerColor GetColor() => Color;
 
 
-        protected static List<Move> CalculatePotentialMoves(IReadOnlyList<LogicalPiece> state)
+        protected static async Task<List<Move>> CalculatePotentialMoves(IReadOnlyList<LogicalPiece> state)
         {
-            List<Move> result = new List<Move>();
-
-            foreach (LogicalPiece alreadyPlacedPiece in state)
-            {
-                List<LogicalPiece> directions = GetOpposingAdjacentsOf(alreadyPlacedPiece, state);
-                List<Move> moves = GetMovesFrom(alreadyPlacedPiece, directions, state);
-                
-                result.AddRange(moves);
-            }
-
-            return result;
+            return await new Task<List<Move>>(() => state.SelectMany(alreadyPlacedPiece => {
+                var directions = GetOpposingAdjacentsOf(alreadyPlacedPiece, state);
+                var moves = GetMovesFrom(alreadyPlacedPiece, directions, state);
+                return moves;
+            }).ToList());
+            
+//            var result = new List<Move>();
+//            
+//            foreach (var alreadyPlacedPiece in state)
+//            {
+//                var directions = GetOpposingAdjacentsOf(alreadyPlacedPiece, state);
+//                var moves = GetMovesFrom(alreadyPlacedPiece, directions, state);
+//                
+//                result.AddRange(moves);
+//            }
+//
+//            return result;
         }
 
         private static List<LogicalPiece> GetOpposingAdjacentsOf(LogicalPiece existingPiece, IReadOnlyList<LogicalPiece> state)
@@ -113,8 +121,8 @@ namespace Models.Player
             return InsideBounds(piece.X) && InsideBounds(piece.Z);
         }
         
-        public abstract List<Move> GetNextMove();
-        public abstract IPlayer WithCalculatedPotentialMovesFrom(IReadOnlyList<LogicalPiece> state);
+        public abstract Task<List<Move>> GetNextMove();
+        public abstract Task<IPlayer> WithCalculatedPotentialMovesFrom(IReadOnlyList<LogicalPiece> state);
         public abstract IPlayer WithPass();
     }
 }

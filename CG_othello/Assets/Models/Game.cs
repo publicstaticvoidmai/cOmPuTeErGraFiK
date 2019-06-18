@@ -51,15 +51,13 @@ namespace Models
             while (!(CurrentPlayer.HasPassed() && _player2.HasPassed())) {
                 if (CurrentPlayer.HasNextMove())
                 {
-                    var nextMove = CurrentPlayer.GetNextMove();
-                    if (nextMove.Count == 0) continue; // for humanplayers that haven't selected anything yes
+                    var nextMove = CurrentPlayer.GetNextMove().Result;
                     
                     _logicalBoard = _logicalBoard.With(nextMove);
                     
                     NextPlayer(false);
                 } else NextPlayer(true);
             }
-            
             // wenn wir hier ankommen ist das Spiel vorbei
         }
         
@@ -89,15 +87,15 @@ namespace Models
                 .With(new LogicalPiece(middle, offMiddle, PlayerColor.White));
         }
         
-        private void NextPlayer(bool currentHasPassed)
+        private async void NextPlayer(bool currentHasPassed)
         {
             _player1 = currentHasPassed ? // current player gets lined up to be player 2 by becoming player one
                 CurrentPlayer.WithPass() : 
-                CurrentPlayer.WithCalculatedPotentialMovesFrom(_logicalBoard.LogicalState);
+                await CurrentPlayer.WithCalculatedPotentialMovesFrom(_logicalBoard.LogicalState);
             
             CurrentPlayer = currentHasPassed ? // actual player 2 is being made the current player
                 _player2 : 
-                _player2.WithCalculatedPotentialMovesFrom(_logicalBoard.LogicalState);
+                await _player2.WithCalculatedPotentialMovesFrom(_logicalBoard.LogicalState);
             
             _player2 = _player1; // player 1 is now player 2
         }
