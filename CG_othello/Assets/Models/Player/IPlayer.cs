@@ -10,10 +10,10 @@ namespace Models.Player
         bool HasPassed();
 
         IReadOnlyList<Move> GetPotentialMoves();
-        Task<List<Move>> GetNextMove();
+        List<Move> GetNextMove();
         PlayerColor GetColor();
         
-        Task<IPlayer> WithCalculatedPotentialMovesFrom(IReadOnlyList<LogicalPiece> state);
+        IPlayer WithCalculatedPotentialMovesFrom(IReadOnlyList<LogicalPiece> state);
         IPlayer WithPass();
     }
 }

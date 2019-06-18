@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Models.Board;
 
 namespace Models.Player
@@ -31,25 +29,25 @@ namespace Models.Player
         public PlayerColor GetColor() => Color;
 
 
-        protected static async Task<List<Move>> CalculatePotentialMoves(IReadOnlyList<LogicalPiece> state)
+        protected static List<Move> CalculatePotentialMoves(IReadOnlyList<LogicalPiece> state)
         {
-            return await new Task<List<Move>>(() => state.SelectMany(alreadyPlacedPiece => {
-                var directions = GetOpposingAdjacentsOf(alreadyPlacedPiece, state);
-                var moves = GetMovesFrom(alreadyPlacedPiece, directions, state);
-                return moves;
-            }).ToList());
-            
-//            var result = new List<Move>();
-//            
-//            foreach (var alreadyPlacedPiece in state)
-//            {
+//            return await new Task<List<Move>>(() => state.SelectMany(alreadyPlacedPiece => {
 //                var directions = GetOpposingAdjacentsOf(alreadyPlacedPiece, state);
 //                var moves = GetMovesFrom(alreadyPlacedPiece, directions, state);
-//                
-//                result.AddRange(moves);
-//            }
-//
-//            return result;
+//                return moves;
+//            }).ToList());
+            
+            var result = new List<Move>();
+            
+            foreach (var alreadyPlacedPiece in state)
+            {
+                var directions = GetOpposingAdjacentsOf(alreadyPlacedPiece, state);
+                var moves = GetMovesFrom(alreadyPlacedPiece, directions, state);
+                
+                result.AddRange(moves);
+            }
+
+            return result;
         }
 
         private static List<LogicalPiece> GetOpposingAdjacentsOf(LogicalPiece existingPiece, IReadOnlyList<LogicalPiece> state)
@@ -83,7 +81,7 @@ namespace Models.Player
             return moves;
         }
 
-        private static Tuple<LogicalPiece, int> GetPieceAtEndOfLineAndDistanceFrom(
+        private static (LogicalPiece, int) GetPieceAtEndOfLineAndDistanceFrom(
             LogicalPiece origin, 
             LogicalPiece direction, 
             IReadOnlyList<LogicalPiece> state)
@@ -104,14 +102,15 @@ namespace Models.Player
                 flipped++;
             }
 
-            return new Tuple<LogicalPiece, int>(new LogicalPiece(next.X, next.Z, origin.Color), flipped);
+            return (new LogicalPiece(next.X, next.Z, origin.Color), flipped);
         }
 
-        private static Tuple<int, int> GetSlopeFrom(LogicalPiece origin, LogicalPiece direction)
+        private static (int, int) GetSlopeFrom(LogicalPiece origin, LogicalPiece direction)
         {
             // this works because we know that destination and adjacent will always be at most one step apart
             int GetDirectionFrom(int start, int end) => end.CompareTo(start);
-            return new Tuple<int, int>(GetDirectionFrom(origin.X, direction.X), GetDirectionFrom(origin.Z, direction.Z));
+            
+            return (GetDirectionFrom(origin.X, direction.X), GetDirectionFrom(origin.Z, direction.Z));
         }
 
         private static bool InsideBounds(LogicalPiece piece)
@@ -121,8 +120,8 @@ namespace Models.Player
             return InsideBounds(piece.X) && InsideBounds(piece.Z);
         }
         
-        public abstract Task<List<Move>> GetNextMove();
-        public abstract Task<IPlayer> WithCalculatedPotentialMovesFrom(IReadOnlyList<LogicalPiece> state);
+        public abstract List<Move> GetNextMove();
+        public abstract IPlayer WithCalculatedPotentialMovesFrom(IReadOnlyList<LogicalPiece> state);
         public abstract IPlayer WithPass();
     }
 }

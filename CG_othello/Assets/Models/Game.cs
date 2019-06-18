@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Models.Board;
 using Models.Player;
 using UnityEngine;
@@ -48,11 +50,12 @@ namespace Models
 
         public void Update()
         {
-            while (!(CurrentPlayer.HasPassed() && _player2.HasPassed())) {
+            if (!(CurrentPlayer.HasPassed() && _player2.HasPassed())) {
                 if (CurrentPlayer.HasNextMove())
                 {
-                    var nextMove = CurrentPlayer.GetNextMove().Result;
-                    
+                    List<Move> nextMove = CurrentPlayer.GetNextMove();
+                    if (nextMove.Count == 0) return;
+
                     _logicalBoard = _logicalBoard.With(nextMove);
                     
                     NextPlayer(false);
@@ -87,15 +90,15 @@ namespace Models
                 .With(new LogicalPiece(middle, offMiddle, PlayerColor.White));
         }
         
-        private async void NextPlayer(bool currentHasPassed)
+        private void NextPlayer(bool currentHasPassed)
         {
             _player1 = currentHasPassed ? // current player gets lined up to be player 2 by becoming player one
                 CurrentPlayer.WithPass() : 
-                await CurrentPlayer.WithCalculatedPotentialMovesFrom(_logicalBoard.LogicalState);
+                CurrentPlayer.WithCalculatedPotentialMovesFrom(_logicalBoard.LogicalState);
             
             CurrentPlayer = currentHasPassed ? // actual player 2 is being made the current player
                 _player2 : 
-                await _player2.WithCalculatedPotentialMovesFrom(_logicalBoard.LogicalState);
+                _player2.WithCalculatedPotentialMovesFrom(_logicalBoard.LogicalState);
             
             _player2 = _player1; // player 1 is now player 2
         }

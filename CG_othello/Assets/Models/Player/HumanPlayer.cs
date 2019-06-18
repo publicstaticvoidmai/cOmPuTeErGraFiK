@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Models.Board;
-using UnityEngine;
 
 namespace Models.Player
 {
@@ -17,15 +15,11 @@ namespace Models.Player
         private int? _nextX;
         private int? _nextZ;
 
-        public override async Task<List<Move>> GetNextMove()
+        public override List<Move> GetNextMove()
         {
-            (int x, int z) = await Task.Run(() =>
-            {
-                while (!_nextX.HasValue || !_nextZ.HasValue) Task.Delay(100);
-                return (_nextX.Value, _nextZ.Value);
-            });
+            if (!_nextX.HasValue || !_nextZ.HasValue) return new List<Move>();
             
-            LogicalPiece selected = new LogicalPiece(x, z, Color);
+            LogicalPiece selected = new LogicalPiece(_nextX.Value, _nextZ.Value, Color);
             _nextX = null;
             _nextZ = null;
             
@@ -36,10 +30,9 @@ namespace Models.Player
                 .ToList();
         }
 
-        public override async Task<IPlayer> WithCalculatedPotentialMovesFrom(IReadOnlyList<LogicalPiece> state)
+        public override IPlayer WithCalculatedPotentialMovesFrom(IReadOnlyList<LogicalPiece> state)
         {
-            var potentialMoves = await CalculatePotentialMoves(state);
-            return new HumanPlayer(Color, potentialMoves, false);
+            return new HumanPlayer(Color, CalculatePotentialMoves(state), false);
         }
 
         public override IPlayer WithPass()

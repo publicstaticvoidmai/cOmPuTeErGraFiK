@@ -12,17 +12,17 @@ namespace Models.Player
             return new ComputerPlayer(color, new List<Move>(), false);
         }
         
-        public override async Task<List<Move>> GetNextMove()
+        public override List<Move> GetNextMove()
         {
             var origin = PotentialMoves.First().Origin;
-            return await Task.Run(() => PotentialMoves
+            return PotentialMoves
                 .Where(move => move.Origin.Equals(origin))
-                .ToList());
+                .ToList();
         }
 
-        public override async Task<IPlayer> WithCalculatedPotentialMovesFrom(IReadOnlyList<LogicalPiece> state)
+        public override IPlayer WithCalculatedPotentialMovesFrom(IReadOnlyList<LogicalPiece> state)
         {
-            return new ComputerPlayer(Color, await CalculatePotentialMoves(state), false);
+            return new ComputerPlayer(Color, CalculatePotentialMoves(state), false);
         }
         
         public override IPlayer WithPass()
