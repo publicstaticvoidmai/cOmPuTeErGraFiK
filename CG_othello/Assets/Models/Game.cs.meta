@@ -1,3 +1,18 @@
-﻿fileFormatVersion: 2
+fileFormatVersion: 2
 guid: 5aefa856aa574f93b6f48994fd7bfcb3
-timeCreated: 1560615480
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - whitePref: {fileID: 9152527936645712053, guid: 87a09ee1260db4c2a913891889545e13,
+      type: 3}
+  - blackPref: {fileID: 9152527936645712053, guid: 62eeaf6aab376ee4cbe6b20117fc5f38,
+      type: 3}
+  - board: {instanceID: 0}
+  - tilePref: {fileID: 6306769893446516900, guid: 651008cbbac03cf44935bbd1e4cb5557,
+      type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

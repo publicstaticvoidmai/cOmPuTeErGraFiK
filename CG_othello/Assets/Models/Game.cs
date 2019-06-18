@@ -58,8 +58,6 @@ namespace Models
             }
         }
         
-        public PlayerColor GetCurrentColor() => CurrentPlayer.GetColor();
-        
         public GameObject GetPrefForColor(PlayerColor color) => color == PlayerColor.Black ? blackPref : whitePref;
 
 
