@@ -61,7 +61,7 @@ namespace Models
                     NextPlayer(false);
                 } else NextPlayer(true);
             }
-            // wenn wir hier ankommen ist das Spiel vorbei
+            // TODO wenn wir hier ankommen ist das Spiel vorbei
         }
         
         public GameObject GetPrefForColor(PlayerColor color) => color == PlayerColor.Black ? blackPref : whitePref;
