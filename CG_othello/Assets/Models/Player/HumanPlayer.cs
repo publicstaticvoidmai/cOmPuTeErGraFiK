@@ -16,9 +16,9 @@ namespace Models.Player
 
         public override List<Move> GetNextMove()
         {
-            while (!_nextX.HasValue || !_nextZ.HasValue)
+            if (!_nextX.HasValue || !_nextZ.HasValue)
             {
-                GetNextMove();
+                return new List<Move>();
             }
             
             LogicalPiece selected = new LogicalPiece(_nextX.Value, _nextZ.Value, Color);

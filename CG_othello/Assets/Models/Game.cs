@@ -52,6 +52,8 @@ namespace Models
                 if (CurrentPlayer.HasNextMove())
                 {
                     var nextMove = CurrentPlayer.GetNextMove();
+                    if (nextMove.Count == 0) continue; // for humanplayers that haven't selected anything yes
+                    
                     _logicalBoard = _logicalBoard.With(nextMove);
                     
                     NextPlayer(false);
