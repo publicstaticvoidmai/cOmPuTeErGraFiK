@@ -1,19 +1,34 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Models.Board;
-using UnityEngine;
 
 namespace Models.Player
 {
-    public abstract class Player : MonoBehaviour
+    public abstract class AbstractPlayer : IPlayer
     {
-        public abstract Tuple<int, int, PlayerColor> GetNextMove();
-        public abstract List<Move> GetPotentialMoves();
+        protected readonly PlayerColor Color;
+        protected readonly IReadOnlyList<Move> PotentialMoves;
+        private readonly bool _hasPassed;
 
-        public abstract void SetNextMove(int x, int z);
+        protected AbstractPlayer(PlayerColor color, IReadOnlyList<Move> potentialMoves, bool hasPassed)
+        {
+            Color = color;
+            PotentialMoves = potentialMoves;
+            _hasPassed = hasPassed;
+        }
+
+        public bool HasNextMove()
+        {
+            return PotentialMoves.Any(move => move.Origin.Color.Equals(Color));
+        }
+
+        public bool HasPassed() => _hasPassed;
+        public IReadOnlyList<Move> GetPotentialMoves() => PotentialMoves;
+
+        public PlayerColor GetColor() => Color;
+
 
         protected static List<Move> CalculatePotentialMoves(IReadOnlyList<LogicalPiece> state)
         {
@@ -94,9 +109,13 @@ namespace Models.Player
 
         private static bool InsideBounds(LogicalPiece piece)
         {
-            bool InsideBounds(int pos) { return pos >= 0 && pos < Game.Instance.BoardLength; }
+            bool InsideBounds(int pos) => pos >= 0 && pos < Game.Instance.BoardLength;
             
             return InsideBounds(piece.X) && InsideBounds(piece.Z);
         }
+        
+        public abstract List<Move> GetNextMove();
+        public abstract IPlayer WithCalculatedPotentialMovesFrom(IReadOnlyList<LogicalPiece> state);
+        public abstract IPlayer WithPass();
     }
 }

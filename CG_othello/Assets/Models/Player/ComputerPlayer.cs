@@ -1,41 +1,36 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using Models.Board;
 
 namespace Models.Player
 {
-    public class ComputerPlayer : Player
+    public class ComputerPlayer : AbstractPlayer
     {
-        private PlayerColor _color;
-        public PlayerColor Color
+        public static ComputerPlayer Create(PlayerColor color)
         {
-            get => _color;
+            return new ComputerPlayer(color, new List<Move>(), false);
+        }
+        
+        public override List<Move> GetNextMove()
+        {
+            var origin = PotentialMoves.First().Origin;
+            return PotentialMoves
+                .Where(move => move.Origin.Equals(origin))
+                .ToList();
         }
 
-        public ComputerPlayer Init(PlayerColor color)
+        public override IPlayer WithCalculatedPotentialMovesFrom(IReadOnlyList<LogicalPiece> state)
         {
-            _color = color;
-            return this;
+            return new ComputerPlayer(Color, CalculatePotentialMoves(state), false);
+        }
+        
+        public override IPlayer WithPass()
+        {
+            return new ComputerPlayer(Color, PotentialMoves, false);
         }
 
-        private void Start()
+        private ComputerPlayer(PlayerColor color, IReadOnlyList<Move> potentialMoves, bool hasPassed) : base(color, potentialMoves, hasPassed)
         {
-            
-        }
-
-        public override Tuple<int, int, PlayerColor> GetNextMove()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override List<Move> GetPotentialMoves()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void SetNextMove(int x, int z)
-        {
-            throw new NotImplementedException();
         }
     }
 }

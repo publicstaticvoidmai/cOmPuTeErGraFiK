@@ -1,49 +1,55 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using Models.Board;
 
 namespace Models.Player
 {
-    public class HumanPlayer : Player
+    public class HumanPlayer : AbstractPlayer
     {
+        public static HumanPlayer Create(PlayerColor color)
+        {
+            return new HumanPlayer(color, new List<Move>(), false);
+        }
+        
         private int? _nextX;
         private int? _nextZ;
 
-        private PlayerColor _color;
-        public PlayerColor Color => _color;
-        
-        public HumanPlayer Init(PlayerColor color)
+        public override List<Move> GetNextMove()
         {
-            _color = color;
-            return this;
-        }
-
-        public override Tuple<int, int, PlayerColor> GetNextMove()
-        {
-            if (!_nextX.HasValue || !_nextZ.HasValue) return null;
+            while (!_nextX.HasValue || !_nextZ.HasValue)
+            {
+                GetNextMove();
+            }
             
-            var result = Tuple.Create(_nextX.Value, _nextZ.Value, Color);
+            LogicalPiece selected = new LogicalPiece(_nextX.Value, _nextZ.Value, Color);
             _nextX = null;
             _nextZ = null;
-
-            return result;
+            
+            // This is a bold assumption: For we check if the field exists in the tile, we know that we should only
+            // get selected pieces that are actually in the set of potentialMoves
+            return PotentialMoves
+                .Where(move => move.Origin.Equals(selected))
+                .ToList();
         }
 
-        public override List<Move> GetPotentialMoves()
+        public override IPlayer WithCalculatedPotentialMovesFrom(IReadOnlyList<LogicalPiece> state)
         {
-            var logicalPieces = Game.Instance.State;
-            var k = CalculatePotentialMoves(logicalPieces);
-                
-            var x = k.FindAll(move => move.Origin.Color.Equals(Color));
-
-            return x;
+            return new HumanPlayer(Color, CalculatePotentialMoves(state), false);
         }
 
-        public override void SetNextMove(int x, int z)
+        public override IPlayer WithPass()
+        {
+            return new HumanPlayer(Color, PotentialMoves, true);
+        }
+
+        public void SetNextMove(int x, int z)
         {
             _nextX = x;
             _nextZ = z;
         }
 
+        private HumanPlayer(PlayerColor color, IReadOnlyList<Move> potentialMoves, bool hasPassed) : base(color, potentialMoves, hasPassed)
+        {
+        }
     }
 }

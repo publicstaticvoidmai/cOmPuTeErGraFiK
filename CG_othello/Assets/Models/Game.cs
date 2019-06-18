@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Models.Board;
 using Models.Player;
 using UnityEngine;
@@ -14,14 +11,17 @@ namespace Models
         public GameObject whitePref;
         public GameObject blackPref;
 
-        public IReadOnlyList<LogicalPiece> State => _board.LogicalState;
+        public GameObject board;
+        public GameObject tilePref;
 
-        private Board.Board _board;
+        private Board.Board _logicalBoard; // this is the actual state
         
-        private ComputerPlayer _black;
-        private HumanPlayer _white;
+        private IPlayer _player1;
+        private IPlayer _player2;
+
+        public IPlayer CurrentPlayer { get; private set; }
         
-        public List<Move> ValidMoves { get; private set; }
+        
         private bool _isWhitesTurn;
 
         public static Game Instance;
@@ -29,42 +29,38 @@ namespace Models
         public void Awake()
         {
             BoardLength = PlayerPrefs.GetInt("BoardLength");
-            _board = new Board.Board(BoardLength);
-            _black = gameObject.AddComponent<ComputerPlayer>().Init(PlayerColor.Black);
-            _white = gameObject.AddComponent<HumanPlayer>().Init(PlayerColor.White);
-            _isWhitesTurn = false;
+            
+            _logicalBoard = new Board.Board(BoardLength);
+            _player1 = ComputerPlayer.Create(PlayerColor.Black);
+            _player2 = HumanPlayer.Create(PlayerColor.White);
+
+            CurrentPlayer = _player1;
+            
             Instance = this;
         }
         
         public void Start()
         {
             GenerateBoard();
-            NextPlayer();
+            NextPlayer(false); // human will start
         }
 
         public void Update()
         {
-            var nextHumanMove = _white.GetNextMove(); // nullable
-            if (nextHumanMove == null) return;
-            
-            // this should not be placepiece but rather applyMove
-            ApplyPieceToState(nextHumanMove.Item1, nextHumanMove.Item2, nextHumanMove.Item3);
-        }
-
-        public Player.Player GetCurrentPlayer()
-        {
-            return _isWhitesTurn ? (Player.Player) _white : _black;
-        }
-
-        public PlayerColor GetCurrentColor()
-        {
-            return _isWhitesTurn ? PlayerColor.White : PlayerColor.Black;
+            while (!(CurrentPlayer.HasPassed() && _player2.HasPassed())) {
+                if (CurrentPlayer.HasNextMove())
+                {
+                    var nextMove = CurrentPlayer.GetNextMove();
+                    _logicalBoard = _logicalBoard.With(nextMove);
+                    
+                    NextPlayer(false);
+                } else NextPlayer(true);
+            }
         }
         
-        public GameObject GetPrefForColor(PlayerColor color)
-        {
-            return color == PlayerColor.Black ? blackPref : whitePref;
-        }
+        public PlayerColor GetCurrentColor() => CurrentPlayer.GetColor();
+        
+        public GameObject GetPrefForColor(PlayerColor color) => color == PlayerColor.Black ? blackPref : whitePref;
 
 
         private void GenerateBoard()
@@ -72,38 +68,36 @@ namespace Models
             int middle = BoardLength / 2;
             int offMiddle = middle - 1;
             
-            ApplyPieceToState(offMiddle, offMiddle, PlayerColor.Black);
-            ApplyPieceToState(offMiddle, middle, PlayerColor.White);
-            ApplyPieceToState(middle, middle, PlayerColor.Black);
-            ApplyPieceToState(middle, offMiddle, PlayerColor.White);
-        }
-
-        private ReadOnlyCollection<Piece> ApplyPieceToState(int x, int z, PlayerColor color, ReadOnlyCollection<Piece> state)
-        {
-            List<Piece> newState = new List<Piece>(state);
-            GameObject pref = GetPrefForColor(color);
-            GameObject piece = Instantiate(pref, new Vector3(x, 0, z), Quaternion.identity);
+            void CreateTile(int x, int z) => 
+                Instantiate(tilePref, new Vector3(x, 0, z), Quaternion.identity)
+                .transform.SetParent(board.transform);
             
-            newState.Add(piece.AddComponent<Piece>().Init(x, z, color));
-            return newState.AsReadOnly();
-        }
+            for (int x = 0; x < BoardLength; x++)
+            {
+                for (int z = 0; z < BoardLength; z++)
+                {
+                    CreateTile(x, z);
+                }
+            }
 
-        private void ApplyMove(Move move)
+            _logicalBoard = _logicalBoard
+                .With(new LogicalPiece(offMiddle, offMiddle, PlayerColor.Black))
+                .With(new LogicalPiece(offMiddle, middle, PlayerColor.White))
+                .With(new LogicalPiece(middle, middle, PlayerColor.Black))
+                .With(new LogicalPiece(middle, offMiddle, PlayerColor.White));
+        }
+        
+        private void NextPlayer(bool currentHasPassed)
         {
+            _player1 = currentHasPassed ? // current player gets lined up to be player 2 by becoming player one
+                CurrentPlayer.WithPass() : 
+                CurrentPlayer.WithCalculatedPotentialMovesFrom(_logicalBoard.LogicalState);
             
-        }
-
-        private Piece GetPieceAt(int x, int z)
-        {
-            bool IsValid(int bound) => bound <= BoardLength - 1 && bound >= 0;
-
-            return (IsValid(x) && IsValid(z)) ? State.Find(piece => piece.X == x && piece.Z == z) : null;
-        }
-
-        private void NextPlayer()
-        {
-            _isWhitesTurn = !_isWhitesTurn;
-            ValidMoves = GetCurrentPlayer().GetPotentialMoves();
+            CurrentPlayer = currentHasPassed ? // actual player 2 is being made the current player
+                _player2 : 
+                _player2.WithCalculatedPotentialMovesFrom(_logicalBoard.LogicalState);
+            
+            _player2 = _player1; // player 1 is now player 2
         }
     }
 }

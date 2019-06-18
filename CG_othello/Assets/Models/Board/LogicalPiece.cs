@@ -20,5 +20,10 @@ namespace Models.Board
                    otherPiece.Z == Z && 
                    otherPiece.Color == Color;
         }
+
+        public override int GetHashCode()
+        {
+            return (X * 397) ^ Z * 397 ^ (int) Color;
+        }
     }
 }
