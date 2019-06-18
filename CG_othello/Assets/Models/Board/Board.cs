@@ -11,8 +11,6 @@ namespace Models.Board
         
         public Board(int edgeLength)
         {
-            if (edgeLength < 6 || edgeLength > 10 || edgeLength % 2 != 0) edgeLength = 8;
-            
             // TODO @Mai you have to get the board to have the right edgelength somewhere hereabouts
             LogicalState = new List<LogicalPiece>(edgeLength * edgeLength).AsReadOnly();
             _physicalState = new Piece[edgeLength, edgeLength];

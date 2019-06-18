@@ -29,6 +29,7 @@ namespace Models
         public void Awake()
         {
             BoardLength = PlayerPrefs.GetInt("BoardLength");
+            if (BoardLength < 6 || BoardLength > 10 || BoardLength % 2 != 0) BoardLength = 8;
             
             _logicalBoard = new Board.Board(BoardLength);
             _player1 = ComputerPlayer.Create(PlayerColor.Black);
@@ -56,11 +57,12 @@ namespace Models
                     NextPlayer(false);
                 } else NextPlayer(true);
             }
+            
+            // wenn wir hier ankommen ist das Spiel vorbei
         }
         
         public GameObject GetPrefForColor(PlayerColor color) => color == PlayerColor.Black ? blackPref : whitePref;
-
-
+        
         private void GenerateBoard()
         {
             int middle = BoardLength / 2;
