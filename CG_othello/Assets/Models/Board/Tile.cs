@@ -7,7 +7,7 @@ namespace Models.Board
     public class Tile : MonoBehaviour
     {
         //When the mouse hovers over the GameObject, it turns to this color (red)
-        Color _MouseOverColor = Color.red;
+        Color _MouseOverColor = Color.cyan;
 
         private int _x;
         private int _z;
@@ -31,6 +31,7 @@ namespace Models.Board
                 HumanPlayer player = (HumanPlayer) Game.Instance.CurrentPlayer;
                 player.SetNextMove(_x, _z);
             }
+            _renderer.material.color = _originalColor;
         }
 
         public void OnMouseOver()
@@ -48,11 +49,7 @@ namespace Models.Board
             IPlayer player = Game.Instance.CurrentPlayer;
             if (player is HumanPlayer)
             {
-                return 0 < player
-                    .GetPotentialMoves()
-                    .Count(move =>
-                        move.Origin.X == _x && move.Origin.Z == _z && move.Origin.Color == player.GetColor());
-
+                return player.CanPlayOn(_x, _z);
             }
 
             return false;

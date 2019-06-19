@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Models.Board;
 using Models.Player;
 using UnityEngine;
@@ -50,18 +49,24 @@ namespace Models
 
         public void Update()
         {
-            if (!(CurrentPlayer.HasPassed() && _player2.HasPassed())) {
-                if (CurrentPlayer.HasNextMove())
-                {
-                    List<Move> nextMove = CurrentPlayer.GetNextMove();
-                    if (nextMove.Count == 0) return;
-
-                    _logicalBoard = _logicalBoard.With(nextMove);
-                    
-                    NextPlayer(false);
-                } else NextPlayer(true);
+            if (CurrentPlayer.HasPassed() && _player2.HasPassed())
+            {
+                Debug.Log("LOL YOU JUST PLAYED YOURSELF");
+                // TODO Mai kannst du hier noch den score counten und ein Ergebnis ausgeben?
+                // Und dann noch sowas wie "zurück ins Menü" und "nochmal versuchen" vielleicht?
+                return;
             }
-            // TODO wenn wir hier ankommen ist das Spiel vorbei
+
+            if (CurrentPlayer.HasNextMove())
+            {
+                List<Move> nextMove = CurrentPlayer.GetNextMove();
+                if (nextMove.Count == 0) return;
+
+                var newState = _logicalBoard.With(nextMove);
+                _logicalBoard = newState;
+
+                NextPlayer(false);
+            } else NextPlayer(true);
         }
         
         public GameObject GetPrefForColor(PlayerColor color) => color == PlayerColor.Black ? blackPref : whitePref;

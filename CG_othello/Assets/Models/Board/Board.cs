@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -12,7 +13,6 @@ namespace Models.Board
         
         public Board(int edgeLength)
         {
-            // TODO @Mai you have to get the board to have the right edgelength somewhere hereabouts
             LogicalState = new List<LogicalPiece>(edgeLength * edgeLength).AsReadOnly();
             _physicalState = new GameObject[edgeLength, edgeLength];
         }
@@ -43,6 +43,8 @@ namespace Models.Board
         
         private Board _With(LogicalPiece piece, Board board)
         {
+            if (board.LogicalState.Contains(piece)) return board;
+            
             var physicalState = AddToGameObjectState(piece, board._physicalState);
             var logicalState = AddToLogicalState(piece, board.LogicalState);
             
@@ -51,6 +53,8 @@ namespace Models.Board
 
         private Board _Without(LogicalPiece piece, Board board)
         {
+            if (!board.LogicalState.Contains(piece)) return board;
+            
             var logicalState = RemoveFromLogicalState(piece, board.LogicalState);
             var physicalState = RemoveFromGameObjectState(piece, board._physicalState);
 
@@ -64,35 +68,22 @@ namespace Models.Board
                 playerColor => new LogicalPiece(Step(origin.X, destination.X), Step(origin.Z, destination.Z), playerColor);
 
             LogicalPiece next = played;
-            var currentLogicalState = board.LogicalState;
-            var currentPhysicalState = board._physicalState;
+            var currentBoard = board;
 
             while (!next.Equals(bound))
             {
                 var advanceOneStepToBoundIn = StepTowards(next, bound);
 
                 LogicalPiece toRemove = advanceOneStepToBoundIn(played.Color.Opposing());
-                LogicalPiece toAdd = advanceOneStepToBoundIn(played.Color);
 
-                currentLogicalState = AddToLogicalState(
-                    toAdd, 
-                    RemoveFromLogicalState(
-                        toRemove, 
-                        currentLogicalState
-                        )
-                    );
-                currentPhysicalState = AddToGameObjectState(
-                    toAdd, 
-                    RemoveFromGameObjectState(
-                        toRemove, 
-                        currentPhysicalState
-                        )
-                    );
+                currentBoard = currentBoard
+                    .Without(toRemove)
+                    .With(next);
                 
-                next = toAdd;
+                next = advanceOneStepToBoundIn(played.Color);
             }
             
-            return new Board(currentLogicalState, currentPhysicalState);
+            return currentBoard;
         }
         
         private Board(IReadOnlyList<LogicalPiece> logicalState, GameObject[,] physicalState)
@@ -103,9 +94,7 @@ namespace Models.Board
 
         private static IReadOnlyList<LogicalPiece> AddToLogicalState(LogicalPiece piece, IReadOnlyList<LogicalPiece> state)
         {
-            List<LogicalPiece> intermediateLogicalState = new List<LogicalPiece>(state);
-            intermediateLogicalState.Add(piece);
-            return intermediateLogicalState.AsReadOnly();
+            return new List<LogicalPiece>(state) {piece}.AsReadOnly();
         }
         
         private static IReadOnlyList<LogicalPiece> RemoveFromLogicalState(LogicalPiece piece, IReadOnlyList<LogicalPiece> state)

@@ -8,26 +8,27 @@ namespace Models.Player
     {
         protected readonly PlayerColor Color;
         protected readonly IReadOnlyList<Move> PotentialMoves;
+        protected readonly IReadOnlyList<Move> MyMoves;
         private readonly bool _hasPassed;
 
         protected AbstractPlayer(PlayerColor color, IReadOnlyList<Move> potentialMoves, bool hasPassed)
         {
             Color = color;
             PotentialMoves = potentialMoves;
+            MyMoves = potentialMoves.Where(move => move.Origin.Color.Equals(Color)).ToList();
             _hasPassed = hasPassed;
         }
-
-        public bool HasNextMove()
-        {
-            return 0 < PotentialMoves
-                       .Count(move => move.Origin.Color.Equals(Color));
-        }
+        
+        public bool HasNextMove() => 0 < MyMoves.Count;
 
         public bool HasPassed() => _hasPassed;
+        
+        public bool CanPlayOn(int x, int z) => 
+            MyMoves.Count(move => move.Origin.X == x && move.Origin.Z == z) > 0;
+
         public IReadOnlyList<Move> GetPotentialMoves() => PotentialMoves;
 
         public PlayerColor GetColor() => Color;
-
 
         protected static List<Move> CalculatePotentialMoves(IReadOnlyList<LogicalPiece> state)
         {

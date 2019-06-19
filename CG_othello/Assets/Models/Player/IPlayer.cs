@@ -8,6 +8,7 @@ namespace Models.Player
     {
         bool HasNextMove();
         bool HasPassed();
+        bool CanPlayOn(int x, int z);
 
         IReadOnlyList<Move> GetPotentialMoves();
         List<Move> GetNextMove();

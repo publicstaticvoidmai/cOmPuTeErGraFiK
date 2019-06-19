@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Threading;
 using Models.Board;
 
 namespace Models.Player
@@ -11,11 +11,12 @@ namespace Models.Player
         {
             return new ComputerPlayer(color, new List<Move>(), false);
         }
-        
+
         public override List<Move> GetNextMove()
         {
-            var origin = PotentialMoves.First().Origin;
-            return PotentialMoves
+            Thread.Sleep(200);
+            var origin = MyMoves.First().Origin;
+            return MyMoves
                 .Where(move => move.Origin.Equals(origin))
                 .ToList();
         }
