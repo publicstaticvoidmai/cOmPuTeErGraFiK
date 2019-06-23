@@ -9,12 +9,12 @@ namespace Models.Board
     public class Board
     {
         public IReadOnlyList<LogicalPiece> LogicalState { get; private set; }
-        private readonly GameObject[,] _physicalState;
+        private readonly IReadOnlyList<Piece> _physicalState;
         
         public Board(int edgeLength)
         {
             LogicalState = new List<LogicalPiece>(edgeLength * edgeLength).AsReadOnly();
-            _physicalState = new GameObject[edgeLength, edgeLength];
+            _physicalState = new List<Piece>(edgeLength * edgeLength).AsReadOnly();
         }
 
         public Board With(LogicalPiece piece) => _With(piece, this);
@@ -79,6 +79,8 @@ namespace Models.Board
                 LogicalPiece toRemove = advanceOneStepToBoundIn(played.Color.Opposing());
                 LogicalPiece toAdd = advanceOneStepToBoundIn(played.Color);
 
+                //if (toAdd.Equals(bound)) break;
+                
                 currentBoard = currentBoard
                     .Without(toRemove)
                     .With(toAdd);
@@ -89,7 +91,7 @@ namespace Models.Board
             return currentBoard;
         }
         
-        private Board(IReadOnlyList<LogicalPiece> logicalState, GameObject[,] physicalState)
+        private Board(IReadOnlyList<LogicalPiece> logicalState, IReadOnlyList<Piece> physicalState)
         {
             LogicalState = logicalState;
             _physicalState = physicalState;
@@ -97,30 +99,40 @@ namespace Models.Board
 
         private static IReadOnlyList<LogicalPiece> AddToLogicalState(LogicalPiece piece, IReadOnlyList<LogicalPiece> state)
         {
-            return new List<LogicalPiece>(state) {piece}.AsReadOnly();
+            List<LogicalPiece> intermediateLogicalState = new List<LogicalPiece>(state);
+            intermediateLogicalState.Add(piece);
+            
+            return intermediateLogicalState.AsReadOnly();
         }
         
         private static IReadOnlyList<LogicalPiece> RemoveFromLogicalState(LogicalPiece piece, IReadOnlyList<LogicalPiece> state)
         {
             List<LogicalPiece> intermediateLogicalState = new List<LogicalPiece>(state);
             intermediateLogicalState.Remove(piece);
+            
             return intermediateLogicalState.AsReadOnly();
         }
 
-        private static GameObject[,] AddToGameObjectState(LogicalPiece piece, GameObject[,] gameObjectState)
+        private static IReadOnlyList<Piece> AddToGameObjectState(LogicalPiece piece, IReadOnlyList<Piece> gameObjectState)
         {
-            gameObjectState[piece.X, piece.Z] = InstantiateAsPiece(piece);
-            return gameObjectState;
+            List<Piece> intermediateLogicalState = new List<Piece>(gameObjectState);
+            intermediateLogicalState.Add(InstantiateAsPiece(piece));
+            
+            return intermediateLogicalState.AsReadOnly();
         }
         
-        private static GameObject[,] RemoveFromGameObjectState(LogicalPiece piece, GameObject[,] gameObjectState)
+        private static IReadOnlyList<Piece> RemoveFromGameObjectState(LogicalPiece piece, IReadOnlyList<Piece> gameObjectState)
         {
-            Object.Destroy(gameObjectState[piece.X, piece.Z]);
-            gameObjectState[piece.X, piece.Z] = null;
-            return gameObjectState;
+            Piece toRemove = gameObjectState.First(physical => physical.ToLogicalPiece().Equals(piece));
+            Object.Destroy(toRemove.gameObject);
+
+            List<Piece> intermediatePhysicalState = new List<Piece>(gameObjectState);
+            intermediatePhysicalState.RemoveAll(physical => physical.ToLogicalPiece().Equals(piece));
+            
+            return intermediatePhysicalState.AsReadOnly();
         }
 
-        private static GameObject InstantiateAsPiece(LogicalPiece piece)
+        private static Piece InstantiateAsPiece(LogicalPiece piece)
         {
             // this has the very intended sideeffect of actually creating the Piece in the GameWorld.
             // Should be I/O but it isn't
@@ -129,7 +141,10 @@ namespace Models.Board
                     Game.Instance.GetPrefForColor(piece.Color),
                     new Vector3(piece.X, 0f, piece.Z),
                     Quaternion.identity
-                );
+                )
+                .AddComponent<Piece>()
+                .Init(piece);
+
         }
     }
 }
