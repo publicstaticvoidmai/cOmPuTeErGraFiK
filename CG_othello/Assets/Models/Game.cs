@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Models.Board;
 using Models.Player;
 using UnityEngine;
@@ -33,8 +34,12 @@ namespace Models
             if (BoardLength < 6 || BoardLength > 10 || BoardLength % 2 != 0) BoardLength = 8;
             
             _logicalBoard = new Board.Board(BoardLength);
-            _player1 = ComputerPlayer.Create(PlayerColor.Black);
-            _player2 = HumanPlayer.Create(PlayerColor.White);
+
+            _player1 = ComputerPlayer
+                .Create(PlayerColor.Black);
+
+            _player2 = HumanPlayer
+                .Create(PlayerColor.White);
 
             CurrentPlayer = _player1;
             
@@ -43,7 +48,7 @@ namespace Models
         
         public void Start()
         {
-            GenerateBoard();
+            GeneratePhysicalBoard();
             NextPlayer(false); // human will start
         }
 
@@ -51,27 +56,47 @@ namespace Models
         {
             if (CurrentPlayer.HasPassed() && _player2.HasPassed())
             {
-                Debug.Log("LOL YOU JUST PLAYED YOURSELF");
+                Debug.Log("Spiel vorbei");
                 // TODO Mai kannst du hier noch den score counten und ein Ergebnis ausgeben?
                 // Und dann noch sowas wie "zurück ins Menü" und "nochmal versuchen" vielleicht?
                 return;
             }
 
-            if (CurrentPlayer.HasNextMove())
+            if (!CurrentPlayer.HasNextMove())
             {
-                List<Move> nextMove = CurrentPlayer.GetNextMove();
-                if (nextMove.Count == 0) return;
+                Debug.Log(CurrentPlayer.GetColor() + " muss passen, nächster Spieler");
+                NextPlayer(true);
+                return;
+            }
 
-                var newState = _logicalBoard.With(nextMove);
-                _logicalBoard = newState;
+            if (!(CurrentPlayer is HumanPlayer))
+            {
+                Debug.Log(CurrentPlayer.GetColor() + " ist dran.");
+            }
+            
+            
+            List<Move> nextMove = CurrentPlayer.GetNextMove();
+            if (nextMove.Count == 0) return;
+            
+            var played = nextMove.First().Origin;
+            var flipped = nextMove.Select(m => m.Flipped).Sum();
+            var directions = nextMove.Count;
+            
+            Debug.Log(CurrentPlayer.GetColor() + " hat " + played + " gespielt, flipped:" + flipped + " in " + directions + " richtung(en)");
+            foreach (var move in nextMove)
+            {
+                Debug.Log(move);
+            }
 
-                NextPlayer(false);
-            } else NextPlayer(true);
+            var nextBoard = _logicalBoard.With(nextMove);
+            _logicalBoard = nextBoard;
+
+            NextPlayer(false);
         }
         
         public GameObject GetPrefForColor(PlayerColor color) => color == PlayerColor.Black ? blackPref : whitePref;
         
-        private void GenerateBoard()
+        private void GeneratePhysicalBoard()
         {
             int middle = BoardLength / 2;
             int offMiddle = middle - 1;
@@ -97,13 +122,16 @@ namespace Models
         
         private void NextPlayer(bool currentHasPassed)
         {
-            _player1 = currentHasPassed ? // current player gets lined up to be player 2 by becoming player one
-                CurrentPlayer.WithPass() : 
-                CurrentPlayer.WithCalculatedPotentialMovesFrom(_logicalBoard.LogicalState);
+            Debug.Log(CurrentPlayer.GetColor() + " has passed?: " + currentHasPassed);
+            Debug.Log("current was " + CurrentPlayer.GetColor() + " player 2 was " + _player1.GetColor() + " next is " + _player2);
             
-            CurrentPlayer = currentHasPassed ? // actual player 2 is being made the current player
-                _player2 : 
-                _player2.WithCalculatedPotentialMovesFrom(_logicalBoard.LogicalState);
+            // current player gets lined up to be player 2 by becoming player one
+            _player1 = currentHasPassed ? CurrentPlayer.WithPass() : CurrentPlayer;
+            
+            // actual player 2 is being made the current player
+            CurrentPlayer = _player2.WithCalculatedPotentialMovesFrom(_logicalBoard.LogicalState);
+            
+            Debug.Log(CurrentPlayer.GetPotentialMoves().Count + " moves for current player");
             
             _player2 = _player1; // player 1 is now player 2
         }

@@ -26,11 +26,10 @@ namespace Models.Board
         
         public void OnMouseDown()
         {
-            if (IsPlayable())
-            {
-                HumanPlayer player = (HumanPlayer) Game.Instance.CurrentPlayer;
-                player.SetNextMove(_x, _z);
-            }
+            if (!IsPlayable()) return;
+            
+            HumanPlayer player = (HumanPlayer) Game.Instance.CurrentPlayer;
+            player.SetNextMove(_x, _z);
             _renderer.material.color = _originalColor;
         }
 
@@ -41,7 +40,7 @@ namespace Models.Board
 
         public void OnMouseExit()
         {
-            if (IsPlayable()) _renderer.material.color = _originalColor;
+            if (_renderer.material.color != _originalColor) _renderer.material.color = _originalColor;
         }
 
         private bool IsPlayable()

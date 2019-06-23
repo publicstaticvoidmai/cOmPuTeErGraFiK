@@ -26,18 +26,12 @@ namespace Models.Player
         public bool CanPlayOn(int x, int z) => 
             MyMoves.Count(move => move.Origin.X == x && move.Origin.Z == z) > 0;
 
-        public IReadOnlyList<Move> GetPotentialMoves() => PotentialMoves;
+        public IReadOnlyList<Move> GetPotentialMoves() => MyMoves;
 
         public PlayerColor GetColor() => Color;
 
         protected static List<Move> CalculatePotentialMoves(IReadOnlyList<LogicalPiece> state)
         {
-//            return await new Task<List<Move>>(() => state.SelectMany(alreadyPlacedPiece => {
-//                var directions = GetOpposingAdjacentsOf(alreadyPlacedPiece, state);
-//                var moves = GetMovesFrom(alreadyPlacedPiece, directions, state);
-//                return moves;
-//            }).ToList());
-            
             var result = new List<Move>();
             
             foreach (var alreadyPlacedPiece in state)
@@ -55,12 +49,19 @@ namespace Models.Player
         {
             IEnumerable<int> Range(int pos) => Enumerable.Range(pos - 1, pos); // you would think that this is one too little but its not
             LogicalPiece OpposingPieceAt(int x, int z) => new LogicalPiece(x, z, existingPiece.Color.Opposing());
+            
+            List<LogicalPiece> adjacents = new List<LogicalPiece>(8);
 
-            return Range(existingPiece.X)
-                .SelectMany(row => 
-                    Range(existingPiece.Z), (row, col) => OpposingPieceAt(row, col))
-                .Where(state.Contains)
-                .ToList();
+            foreach (var row in Range(existingPiece.X))
+            {
+                foreach (var column in Range(existingPiece.Z))
+                {
+                    var enemyPieceAsDirection = OpposingPieceAt(row, column);
+                    if (state.Contains(enemyPieceAsDirection)) adjacents.Add(enemyPieceAsDirection);
+                }
+            }
+
+            return adjacents;
         }
 
         private static List<Move> GetMovesFrom(LogicalPiece bound, List<LogicalPiece> directions, IReadOnlyList<LogicalPiece> state)
@@ -72,11 +73,8 @@ namespace Models.Player
                 var (possiblePieceForMove, flippedPieces) = 
                     GetPieceAtEndOfLineAndDistanceFrom(bound, direction, state);
 
-                if (
-                    !state.Contains(possiblePieceForMove) && 
-                    InsideBounds(possiblePieceForMove) && 
-                    flippedPieces > 0
-                    ) moves.Add(new Move(possiblePieceForMove, bound, flippedPieces));
+                if (!state.Contains(possiblePieceForMove) && InsideBounds(possiblePieceForMove)) 
+                    moves.Add(new Move(possiblePieceForMove, bound, flippedPieces));
             }
 
             return moves;
@@ -87,12 +85,13 @@ namespace Models.Player
             LogicalPiece direction, 
             IReadOnlyList<LogicalPiece> state)
         {
-            int AdvanceOneStepFrom(int i) => i + i.CompareTo(0); // increment or decrement depending on the direction
+            int AdvanceOneStepFrom(int i) => i + (i < 0 ? -1 : i == 0 ? 0 : 1); // increment or decrement depending on the direction
             LogicalPiece NewLogicalPieceAt(int row, int column) => 
                 new LogicalPiece(origin.X + row, origin.Z + column, origin.Color.Opposing());
             
             var (rowDirection, colDirection) = GetSlopeFrom(origin, direction);
             int flipped = 0;
+            
             LogicalPiece next = NewLogicalPieceAt(rowDirection, colDirection);
             
             while (state.Contains(next))
@@ -109,7 +108,7 @@ namespace Models.Player
         private static (int, int) GetSlopeFrom(LogicalPiece origin, LogicalPiece direction)
         {
             // this works because we know that destination and adjacent will always be at most one step apart
-            int GetDirectionFrom(int start, int end) => end.CompareTo(start);
+            int GetDirectionFrom(int start, int end) => start < end ? 1 : end == start ? 0 : -1;
             
             return (GetDirectionFrom(origin.X, direction.X), GetDirectionFrom(origin.Z, direction.Z));
         }

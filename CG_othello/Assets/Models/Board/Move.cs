@@ -12,5 +12,10 @@ namespace Models.Board
             Destination = destination;
             Flipped = flipped;
         }
+
+        public override string ToString()
+        {
+            return "Play " + Origin + " to " + Destination + " and flip " + Flipped + " Pieces";
+        }
     }
 }

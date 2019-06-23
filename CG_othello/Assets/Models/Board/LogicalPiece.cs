@@ -25,5 +25,10 @@ namespace Models.Board
         {
             return (X * 397) ^ Z * 397 ^ (int) Color;
         }
+
+        public override string ToString()
+        {
+            return X + " ," + Z + ", " + Color;
+        }
     }
 }

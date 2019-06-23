@@ -33,6 +33,7 @@ namespace Models.Board
             Board board = this;
             foreach (var move in moves)
             {
+                board = _With(move.Origin, board);
                 board = _With(move.Origin, move.Destination, board); // foldleft ObjectOriented STYLE YEAH!!1!
             }
 
@@ -45,8 +46,8 @@ namespace Models.Board
         {
             if (board.LogicalState.Contains(piece)) return board;
             
-            var physicalState = AddToGameObjectState(piece, board._physicalState);
             var logicalState = AddToLogicalState(piece, board.LogicalState);
+            var physicalState = AddToGameObjectState(piece, board._physicalState);
             
             return new Board(logicalState, physicalState);
         }
@@ -63,7 +64,8 @@ namespace Models.Board
 
         private static Board _With(LogicalPiece played, LogicalPiece bound, Board board)
         {
-            int Step(int from, int to) => from + to.CompareTo(from);
+            // this looks like shit I'm sorry: This advances from one step in the direction of to
+            int Step(int from, int to) => from + (from < to ? 1 : to == from ? 0 : -1);
             Func<PlayerColor, LogicalPiece> StepTowards(LogicalPiece origin, LogicalPiece destination) => 
                 playerColor => new LogicalPiece(Step(origin.X, destination.X), Step(origin.Z, destination.Z), playerColor);
 
@@ -75,12 +77,13 @@ namespace Models.Board
                 var advanceOneStepToBoundIn = StepTowards(next, bound);
 
                 LogicalPiece toRemove = advanceOneStepToBoundIn(played.Color.Opposing());
+                LogicalPiece toAdd = advanceOneStepToBoundIn(played.Color);
 
                 currentBoard = currentBoard
                     .Without(toRemove)
-                    .With(next);
-                
-                next = advanceOneStepToBoundIn(played.Color);
+                    .With(toAdd);
+
+                next = toAdd;
             }
             
             return currentBoard;
