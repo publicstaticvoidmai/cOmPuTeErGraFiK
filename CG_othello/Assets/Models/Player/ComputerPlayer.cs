@@ -28,7 +28,7 @@ namespace Models.Player
         
         public override IPlayer WithPass()
         {
-            return new ComputerPlayer(Color, PotentialMoves, false);
+            return new ComputerPlayer(Color, PotentialMoves, true);
         }
 
         private ComputerPlayer(PlayerColor color, IReadOnlyList<Move> potentialMoves, bool hasPassed) : base(color, potentialMoves, hasPassed)

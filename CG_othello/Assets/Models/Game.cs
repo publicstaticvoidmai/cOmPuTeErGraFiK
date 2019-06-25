@@ -122,9 +122,6 @@ namespace Models
         
         private void NextPlayer(bool currentHasPassed)
         {
-            Debug.Log(CurrentPlayer.GetColor() + " has passed?: " + currentHasPassed);
-            Debug.Log("current was " + CurrentPlayer.GetColor() + " player 2 was " + _player1.GetColor() + " next is " + _player2);
-            
             // current player gets lined up to be player 2 by becoming player one
             _player1 = currentHasPassed ? CurrentPlayer.WithPass() : CurrentPlayer;
             

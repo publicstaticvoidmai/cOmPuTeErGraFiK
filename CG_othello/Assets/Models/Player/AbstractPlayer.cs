@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Models.Board;
+using UnityEngine;
 
 namespace Models.Player
 {
@@ -47,7 +48,7 @@ namespace Models.Player
 
         private static List<LogicalPiece> GetOpposingAdjacentsOf(LogicalPiece existingPiece, IReadOnlyList<LogicalPiece> state)
         {
-            IEnumerable<int> Range(int pos) => Enumerable.Range(pos - 1, pos); // you would think that this is one too little but its not
+            IEnumerable<int> Range(int pos) => Enumerable.Range(pos - 1, 3);
             LogicalPiece OpposingPieceAt(int x, int z) => new LogicalPiece(x, z, existingPiece.Color.Opposing());
             
             List<LogicalPiece> adjacents = new List<LogicalPiece>(8);
