@@ -25,7 +25,7 @@ namespace Models.Player
             // This is a bold assumption: For we check if the field exists in the tile, we know that we should only
             // get selected pieces that are actually in the set of potentialMoves
             return MyMoves
-                .Where(move => move.Origin.Equals(selected))
+                .Where(move => move.Played.Equals(selected))
                 .ToList();
         }
 

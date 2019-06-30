@@ -2,20 +2,20 @@ namespace Models.Board
 {
     public class Move
     {
-        public readonly LogicalPiece Origin;
-        public readonly LogicalPiece Destination;
+        public readonly LogicalPiece Played;
+        public readonly LogicalPiece Bound;
         public readonly int Flipped;
 
-        public Move(LogicalPiece origin, LogicalPiece destination, int flipped)
+        public Move(LogicalPiece played, LogicalPiece bound, int flipped)
         {
-            Origin = origin;
-            Destination = destination;
+            Played = played;
+            Bound = bound;
             Flipped = flipped;
         }
 
         public override string ToString()
         {
-            return "Play " + Origin + " to " + Destination + " and flip " + Flipped + " Pieces";
+            return "Play " + Played + " to " + Bound + " and flip " + Flipped + " Pieces";
         }
     }
 }

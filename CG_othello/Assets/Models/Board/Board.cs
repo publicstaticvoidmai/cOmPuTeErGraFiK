@@ -8,13 +8,14 @@ namespace Models.Board
 {
     public class Board
     {
-        public IReadOnlyList<LogicalPiece> LogicalState { get; private set; }
+        public IReadOnlyList<LogicalPiece> LogicalState { get; }
         private readonly IReadOnlyList<Piece> _physicalState;
+        private readonly bool _isReal = true;
         
         public Board(int edgeLength)
         {
             LogicalState = new List<LogicalPiece>(edgeLength * edgeLength).AsReadOnly();
-            _physicalState = new List<Piece>(edgeLength * edgeLength).AsReadOnly();
+            if (_isReal) _physicalState = new List<Piece>(edgeLength * edgeLength).AsReadOnly();
         }
 
         public Board With(LogicalPiece piece) => _With(piece, this);
@@ -23,8 +24,8 @@ namespace Models.Board
         
         public Board With(Move move) => 
             _With(
-                move.Origin, 
-                move.Destination, 
+                move.Played, 
+                move.Bound, 
                 this
             );
         
@@ -33,8 +34,8 @@ namespace Models.Board
             Board board = this;
             foreach (var move in moves)
             {
-                board = _With(move.Origin, board);
-                board = _With(move.Origin, move.Destination, board); // foldleft ObjectOriented STYLE YEAH!!1!
+                board = _With(move.Played, board);
+                board = _With(move.Played, move.Bound, board); // foldleft ObjectOriented STYLE YEAH!!1!
             }
 
             return board;
@@ -42,14 +43,27 @@ namespace Models.Board
         
         // ------------------------------------ These are Companion Functions ------------------------------------ //
         
+        private Board(IReadOnlyList<LogicalPiece> logicalState, IReadOnlyList<Piece> physicalState)
+        {
+            LogicalState = logicalState;
+            _physicalState = physicalState;
+        }
+        public Board(IReadOnlyList<LogicalPiece> logicalState) // "unreal" constructor
+        {
+            _isReal = false;
+            LogicalState = logicalState;
+        }
+
+
         private Board _With(LogicalPiece piece, Board board)
         {
             if (board.LogicalState.Contains(piece)) return board;
             
             var logicalState = AddToLogicalState(piece, board.LogicalState);
-            var physicalState = AddToGameObjectState(piece, board._physicalState);
             
-            return new Board(logicalState, physicalState);
+            return _isReal ? 
+                new Board(logicalState, AddToGameObjectState(piece, board._physicalState)) : 
+                new Board(logicalState);
         }
 
         private Board _Without(LogicalPiece piece, Board board)
@@ -57,9 +71,10 @@ namespace Models.Board
             if (!board.LogicalState.Contains(piece)) return board;
             
             var logicalState = RemoveFromLogicalState(piece, board.LogicalState);
-            var physicalState = RemoveFromGameObjectState(piece, board._physicalState);
-
-            return new Board(logicalState, physicalState);
+            
+            return _isReal ? 
+                new Board(logicalState, RemoveFromGameObjectState(piece, board._physicalState)) : 
+                new Board(logicalState);
         }
 
         private static Board _With(LogicalPiece played, LogicalPiece bound, Board board)
@@ -78,8 +93,6 @@ namespace Models.Board
 
                 LogicalPiece toRemove = advanceOneStepToBoundIn(played.Color.Opposing());
                 LogicalPiece toAdd = advanceOneStepToBoundIn(played.Color);
-
-                //if (toAdd.Equals(bound)) break;
                 
                 currentBoard = currentBoard
                     .Without(toRemove)
@@ -89,12 +102,6 @@ namespace Models.Board
             }
             
             return currentBoard;
-        }
-        
-        private Board(IReadOnlyList<LogicalPiece> logicalState, IReadOnlyList<Piece> physicalState)
-        {
-            LogicalState = logicalState;
-            _physicalState = physicalState;
         }
 
         private static IReadOnlyList<LogicalPiece> AddToLogicalState(LogicalPiece piece, IReadOnlyList<LogicalPiece> state)
@@ -115,10 +122,10 @@ namespace Models.Board
 
         private static IReadOnlyList<Piece> AddToGameObjectState(LogicalPiece piece, IReadOnlyList<Piece> gameObjectState)
         {
-            List<Piece> intermediateLogicalState = new List<Piece>(gameObjectState);
-            intermediateLogicalState.Add(InstantiateAsPiece(piece));
+            List<Piece> intermediatePhysicalState = new List<Piece>(gameObjectState);
+            intermediatePhysicalState.Add(InstantiateAsPiece(piece));
             
-            return intermediateLogicalState.AsReadOnly();
+            return intermediatePhysicalState.AsReadOnly();
         }
         
         private static IReadOnlyList<Piece> RemoveFromGameObjectState(LogicalPiece piece, IReadOnlyList<Piece> gameObjectState)
@@ -144,7 +151,6 @@ namespace Models.Board
                 )
                 .AddComponent<Piece>()
                 .Init(piece);
-
         }
     }
 }

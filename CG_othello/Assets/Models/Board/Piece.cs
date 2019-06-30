@@ -25,7 +25,5 @@ namespace Models.Board
         {
             return _underlying.ToString() + ", Physical";
         }
-        
-        
     }
 }

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Models.Board;
-using UnityEngine;
 
 namespace Models.Player
 {
@@ -16,7 +15,7 @@ namespace Models.Player
         {
             Color = color;
             PotentialMoves = potentialMoves;
-            MyMoves = potentialMoves.Where(move => move.Origin.Color.Equals(Color)).ToList();
+            MyMoves = potentialMoves.Where(move => move.Played.Color.Equals(Color)).ToList();
             _hasPassed = hasPassed;
         }
         
@@ -25,7 +24,7 @@ namespace Models.Player
         public bool HasPassed() => _hasPassed;
         
         public bool CanPlayOn(int x, int z) => 
-            MyMoves.Count(move => move.Origin.X == x && move.Origin.Z == z) > 0;
+            MyMoves.Count(move => move.Played.X == x && move.Played.Z == z) > 0;
 
         public IReadOnlyList<Move> GetPotentialMoves() => MyMoves;
 
