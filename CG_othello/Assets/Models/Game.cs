@@ -54,6 +54,7 @@ namespace Models
                 int scoreBlack = ScoreFor(PlayerColor.Black);
                 int scoreWhite = ScoreFor(PlayerColor.White);
                 string winner = scoreBlack > scoreWhite ? "Black" : "White";
+                Debug.Log(winner + " gewinnt");
                 // TODO Wie gibt man ein Ergebnis aus?????
                 return;
             }
@@ -107,7 +108,7 @@ namespace Models
             }
             else
             {
-                _player1 = CurrentPlayer;
+                _player1 = CurrentPlayer.WithCalculatedPotentialMovesFrom(_logicalBoard.LogicalState);
                 CurrentPlayer = _player2.WithCalculatedPotentialMovesFrom(_logicalBoard.LogicalState);
                 _player2 = _player1;
             }

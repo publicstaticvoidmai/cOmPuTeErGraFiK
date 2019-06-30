@@ -72,12 +72,12 @@ namespace Models.Player
             PlayerColor ownColor = move.First().Played.Color;
             PlayerColor opposingColor = ownColor.Opposing();
             
-            List<Move> opponentMoves = CalculatePotentialMoves(state)
+            List<Move> opponentMoves = CalculatePotentialMoves(board.LogicalState)
                 .Where(selected => 
                     selected.Played.Color.Equals(opposingColor)
                 )
                 .ToList();
-            List<Move> predictedOpponentMove = GetHighestRewardMove(opponentMoves, state, depth - 1);
+            List<Move> predictedOpponentMove = GetHighestRewardMove(opponentMoves, board.LogicalState, depth - 1);
             Board.Board predictedNextState = board.With(predictedOpponentMove);
 
             var next = CalculatePotentialMoves(predictedNextState.LogicalState);
