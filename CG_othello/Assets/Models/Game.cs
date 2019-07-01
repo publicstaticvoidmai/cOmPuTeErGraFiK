@@ -53,10 +53,15 @@ namespace Models
                 int ScoreFor(PlayerColor color) => _logicalBoard.LogicalState.Count(piece => piece.Color == color);
                 int scoreBlack = ScoreFor(PlayerColor.Black);
                 int scoreWhite = ScoreFor(PlayerColor.White);
-                string winner = scoreBlack > scoreWhite ? "Black" : "White";
-                Debug.Log(winner + " gewinnt");
+                string winner;
+                
+                if (scoreWhite == scoreBlack) winner = "Draw!";
+                else if (scoreBlack > scoreWhite) winner = "Black wins!";
+                else winner = "White wins!";
+                
+                Debug.Log(winner + scoreBlack + " : " + scoreWhite);
                 // TODO Wie gibt man ein Ergebnis aus?????
-                return;
+                return; // zurueck zum menu
             }
             if (!CurrentPlayer.HasNextMove())
             {

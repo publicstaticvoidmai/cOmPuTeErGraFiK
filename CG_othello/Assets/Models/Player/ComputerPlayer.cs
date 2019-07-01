@@ -7,9 +7,9 @@ namespace Models.Player
 {
     public class ComputerPlayer : AbstractPlayer
     {
-        private const double MovabilityWeight = 0.9;
-        private const double GainWeight = 0.7;
-        private const double EdgeWeight = 0.8;
+        private const double MovabilityWeight = 0.8;
+        private const double GainWeight = 0.6;
+        private const double EdgeWeight = 0.9;
 
         private const int Depth = 3;
 
@@ -29,7 +29,6 @@ namespace Models.Player
                 Gain = gain;
             }
 
-            
             public int CompareTo(object obj)
             {
                 if (obj is Reward other)
@@ -54,9 +53,7 @@ namespace Models.Player
                 // the further we stray from the middle the less important it gets to flip a lot of fields
                 double weightFlipped = 1 - EdgeWeight * (distanceMiddleColumn + distanceMiddleRow) / edgeLength;
 
-                reward += weightFlipped * singleMove.Flipped
-                       * distanceMiddleColumn / edgeLength
-                       * distanceMiddleRow / edgeLength;
+                reward += weightFlipped * singleMove.Flipped;
             }
 
             return reward;
@@ -121,6 +118,7 @@ namespace Models.Player
 
         public override List<Move> GetNextMove()
         {
+            // depth could be adjusted if so desired. complexity is n^n though.
             return GetHighestRewardMove(new List<Move>(MyMoves), _lastState, Depth);
         }
 
