@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Models.Board;
 
+using UnityEngine;
+
 namespace Models.Player
 {
     public class ComputerPlayer : AbstractPlayer
@@ -11,7 +13,7 @@ namespace Models.Player
         private const double GainWeight = 0.6;
         private const double EdgeWeight = 0.9;
 
-        private const int Depth = 3;
+        private static int Depth = 3; 
 
         private readonly IReadOnlyList<LogicalPiece> _lastState;
         
@@ -19,6 +21,30 @@ namespace Models.Player
         {
             return new ComputerPlayer(color, new List<Move>(), false, new List<LogicalPiece>());
         }
+
+        /*public void Start()
+        {
+            SetDepth();
+        }
+
+        public void SetDepth()
+        {
+            switch (PlayerPrefs.GetString("Difficuly"))
+            {
+                case "Easy":
+                    Depth = 3;
+                    break;
+                
+                case "Hard":
+                    Depth = 2;
+                    break;
+            }
+        }
+
+        public int GetDepth()
+        {
+            return Depth;
+        }*/
 
         class Reward : IComparable {
             public readonly long Movability;
@@ -119,7 +145,7 @@ namespace Models.Player
         public override List<Move> GetNextMove()
         {
             // depth could be adjusted if so desired. complexity is n^n though.
-            return GetHighestRewardMove(new List<Move>(MyMoves), _lastState, Depth);
+            return GetHighestRewardMove(new List<Move>(MyMoves), _lastState, Depth); //change
         }
 
         public override IPlayer WithCalculatedPotentialMovesFrom(IReadOnlyList<LogicalPiece> state)
