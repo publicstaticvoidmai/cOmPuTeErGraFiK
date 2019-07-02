@@ -54,7 +54,7 @@ namespace Models
             int numberOfAdditions = (BoardLength / 2) - 3;
             while (numberOfAdditions != 0)
             {
-                cameraTransform = cameraTransform + offset;
+                cameraTransform += offset;
                 numberOfAdditions--;
             }
 
