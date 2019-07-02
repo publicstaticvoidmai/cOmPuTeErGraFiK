@@ -51,7 +51,7 @@ namespace Models
         {
             Vector3 cameraTransform = new Vector3(2.5f, 7.0f, 1.0f);
             Vector3 offset = new Vector3(1.0f, 1.0f, 0.75f);
-            int numberOfAdditions = (6 - BoardLength) / 2;
+            int numberOfAdditions = (BoardLength / 2) - 3;
             while (numberOfAdditions != 0)
             {
                 cameraTransform = cameraTransform + offset;
