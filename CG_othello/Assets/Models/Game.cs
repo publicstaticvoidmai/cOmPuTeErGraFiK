@@ -3,6 +3,7 @@ using System.Linq;
 using Models.Board;
 using Models.Player;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Models
 {
@@ -19,6 +20,10 @@ namespace Models
         private IPlayer _player1;
         private IPlayer _player2;
 
+        public Text PlayerText;
+
+        public GameObject Canvas;
+
         public IPlayer CurrentPlayer { get; private set; }
         public static Game Instance;
 
@@ -31,13 +36,44 @@ namespace Models
             
             _logicalBoard = new Board.Board(BoardLength);
 
-            _player1 = ComputerPlayer
-                .Create(PlayerColor.Black);
-            _player2 = HumanPlayer
-                .Create(PlayerColor.White);
+            //_player1 = ComputerPlayer
+            //   .Create(PlayerColor.Black);
+            //_player2 = HumanPlayer
+            //   .Create(PlayerColor.White);
+            
+            SetPlayers();
 
             CurrentPlayer = _player1;
             Instance = this;
+        }
+
+        public void SetPlayers()
+        {
+            switch (PlayerPrefs.GetString("BLACK"))
+            {
+              case "AI":
+                  _player1 = ComputerPlayer
+                      .Create(PlayerColor.Black);
+                  break;
+              
+              case "HUMAN":
+                  _player1 = HumanPlayer
+                      .Create(PlayerColor.Black);
+                  break;
+            }
+
+            switch (PlayerPrefs.GetString("WHITE"))
+            {
+                case "HUMAN":
+                    _player2 = HumanPlayer
+                        .Create(PlayerColor.White);
+                    break;
+                
+                case "AI":
+                    _player2 = ComputerPlayer
+                        .Create(PlayerColor.White);
+                    break;
+            }
         }
         
         public void Start()
@@ -54,12 +90,14 @@ namespace Models
                 int scoreBlack = ScoreFor(PlayerColor.Black);
                 int scoreWhite = ScoreFor(PlayerColor.White);
                 string winner;
+
+                if (scoreWhite == scoreBlack) PlayerText.text = "Draw!";
+                else if (scoreBlack > scoreWhite) PlayerText.text = "BLACK wins!";
+                else PlayerText.text = "WHITE wins!";
                 
-                if (scoreWhite == scoreBlack) winner = "Draw!";
-                else if (scoreBlack > scoreWhite) winner = "Black wins!";
-                else winner = "White wins!";
+                //Debug.Log(winner + scoreBlack + " : " + scoreWhite);
                 
-                Debug.Log(winner + scoreBlack + " : " + scoreWhite);
+                Canvas.SetActive(true);
                 // TODO Wie gibt man ein Ergebnis aus?????
                 return; // zurueck zum menu
             }
