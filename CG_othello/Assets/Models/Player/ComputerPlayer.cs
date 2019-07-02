@@ -13,46 +13,29 @@ namespace Models.Player
         private const double GainWeight = 0.6;
         private const double EdgeWeight = 0.9;
 
-        private static int Depth = 3; 
+        // depth could be adjusted if so desired. complexity is n^n though.
+        private readonly int _depth;
 
         private readonly IReadOnlyList<LogicalPiece> _lastState;
-        
-        public static ComputerPlayer Create(PlayerColor color)
-        {
-            return new ComputerPlayer(color, new List<Move>(), false, new List<LogicalPiece>());
-        }
 
-        /*public void Start()
+        public static ComputerPlayer Create(PlayerColor color, int searchDepth = 2)
         {
-            SetDepth();
+            String complexity = searchDepth + "^" + searchDepth;
+            if (searchDepth > 3) Debug.Log(
+                "The Game will be incredibly slow, " +
+                "please refrain from setting searchdepths bigger than 3. " +
+                "You selected " + searchDepth + ", the complexity will be " + complexity
+            );
+            return new ComputerPlayer(color, new List<Move>(), false, new List<LogicalPiece>(), searchDepth);
         }
-
-        public void SetDepth()
-        {
-            switch (PlayerPrefs.GetString("Difficuly"))
-            {
-                case "Easy":
-                    Depth = 3;
-                    break;
-                
-                case "Hard":
-                    Depth = 2;
-                    break;
-            }
-        }
-
-        public int GetDepth()
-        {
-            return Depth;
-        }*/
 
         class Reward : IComparable {
-            public readonly long Movability;
-            public readonly double Gain;
+            private readonly long _movability;
+            private readonly double _gain;
 
             public Reward(long movability, double gain) {
-                Movability = movability;
-                Gain = gain;
+                _movability = movability;
+                _gain = gain;
             }
 
             public int CompareTo(object obj)
@@ -60,8 +43,8 @@ namespace Models.Player
                 if (obj is Reward other)
                 {
                     return Math.Sign(
-                        MovabilityWeight * (Movability - other.Movability) +
-                        GainWeight * (Gain - other.Gain)
+                        MovabilityWeight * (_movability - other._movability) +
+                        GainWeight * (_gain - other._gain)
                     );
                 }
                 return 0;
@@ -144,28 +127,27 @@ namespace Models.Player
 
         public override List<Move> GetNextMove()
         {
-            // depth could be adjusted if so desired. complexity is n^n though.
-            return GetHighestRewardMove(new List<Move>(MyMoves), _lastState, Depth); //change
+            return GetHighestRewardMove(new List<Move>(MyMoves), _lastState, _depth); //change
         }
 
         public override IPlayer WithCalculatedPotentialMovesFrom(IReadOnlyList<LogicalPiece> state)
         {
-            return new ComputerPlayer(Color, CalculatePotentialMoves(state), false, state);
+            return new ComputerPlayer(Color, CalculatePotentialMoves(state), false, state, _depth);
         }
         
         public override IPlayer WithPass()
         {
-            return new ComputerPlayer(Color, PotentialMoves, true, new List<LogicalPiece>());
+            return new ComputerPlayer(Color, PotentialMoves, true, new List<LogicalPiece>(), _depth);
         }
 
         private ComputerPlayer(
             PlayerColor color, 
             IReadOnlyList<Move> potentialMoves, 
             bool hasPassed, 
-            IReadOnlyList<LogicalPiece> state
-            ) : base(color, potentialMoves, hasPassed)
+            IReadOnlyList<LogicalPiece> state, int depth) : base(color, potentialMoves, hasPassed)
         {
             _lastState = state;
+            _depth = depth;
         }
     }
 }
