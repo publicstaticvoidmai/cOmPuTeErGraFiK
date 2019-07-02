@@ -6,6 +6,9 @@ using UnityEngine.UI;
 public class Dropdown_BLACK : MonoBehaviour
 {
     public Dropdown m_Dropdown;
+    public GameObject Difficulty_AIBLACK;
+    public Dropdown Difficulty_AI_B;
+    
 
     
     // Start is called before the first frame update
@@ -22,11 +25,14 @@ public class Dropdown_BLACK : MonoBehaviour
         switch (m_Dropdown.value)
         {
             case 0:
-                PlayerPrefs.SetString("BLACK", "AI");
+                PlayerPrefs.SetString("Black", "AI");
+                Difficulty_AIBLACK.SetActive(true);
+                PlayerPrefs.SetInt("Black_AI", Difficulty_AI_B.value == 0 ? 3 : 2);
                 break;
             
             case 1: 
-                PlayerPrefs.SetString("BLACK", "HUMAN");
+                PlayerPrefs.SetString("Black", "HUMAN");
+                Difficulty_AIBLACK.SetActive(false);
                 break;
         }
         
