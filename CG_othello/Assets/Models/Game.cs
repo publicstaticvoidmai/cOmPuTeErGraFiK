@@ -20,9 +20,8 @@ namespace Models
         private IPlayer _player1;
         private IPlayer _player2;
 
-        public Text PlayerText;
-
-        public GameObject Canvas;
+        public Text playerText;
+        public GameObject canvas;
 
         public IPlayer CurrentPlayer { get; private set; }
         public static Game Instance;
@@ -36,44 +35,21 @@ namespace Models
             
             _logicalBoard = new Board.Board(BoardLength);
 
-            //_player1 = ComputerPlayer
-            //   .Create(PlayerColor.Black);
-            //_player2 = HumanPlayer
-            //   .Create(PlayerColor.White);
-            
-            SetPlayers();
+            _player1 = GetPlayerFor(PlayerColor.Black);
+            _player2 = GetPlayerFor(PlayerColor.White);
 
             CurrentPlayer = _player1;
             Instance = this;
         }
 
-        public void SetPlayers()
+        private IPlayer GetPlayerFor(PlayerColor color)
         {
-            switch (PlayerPrefs.GetString("BLACK"))
+            if (PlayerPrefs.GetString(color.ToString()) == "AI")
             {
-              case "AI":
-                  _player1 = ComputerPlayer
-                      .Create(PlayerColor.Black);
-                  break;
-              
-              case "HUMAN":
-                  _player1 = HumanPlayer
-                      .Create(PlayerColor.Black);
-                  break;
+                int difficulty = PlayerPrefs.GetInt(color + "_AI", 2);
+                return ComputerPlayer.Create(color, difficulty);
             }
-
-            switch (PlayerPrefs.GetString("WHITE"))
-            {
-                case "HUMAN":
-                    _player2 = HumanPlayer
-                        .Create(PlayerColor.White);
-                    break;
-                
-                case "AI":
-                    _player2 = ComputerPlayer
-                        .Create(PlayerColor.White);
-                    break;
-            }
+            return HumanPlayer.Create(color);
         }
         
         public void Start()
@@ -89,17 +65,13 @@ namespace Models
                 int ScoreFor(PlayerColor color) => _logicalBoard.LogicalState.Count(piece => piece.Color == color);
                 int scoreBlack = ScoreFor(PlayerColor.Black);
                 int scoreWhite = ScoreFor(PlayerColor.White);
-                string winner;
 
-                if (scoreWhite == scoreBlack) PlayerText.text = "Draw!";
-                else if (scoreBlack > scoreWhite) PlayerText.text = "BLACK wins!";
-                else PlayerText.text = "WHITE wins!";
+                if (scoreWhite == scoreBlack) playerText.text = "Draw!";
+                else if (scoreBlack > scoreWhite) playerText.text = "BLACK wins!";
+                else playerText.text = "WHITE wins!";
                 
-                //Debug.Log(winner + scoreBlack + " : " + scoreWhite);
-                
-                Canvas.SetActive(true);
-                // TODO Wie gibt man ein Ergebnis aus?????
-                return; // zurueck zum menu
+                canvas.SetActive(true);
+                return;
             }
             if (!CurrentPlayer.HasNextMove())
             {
