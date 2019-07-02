@@ -699,8 +699,8 @@ MonoBehaviour:
   board: {fileID: 1528298674}
   tilePref: {fileID: 6306769893446516900, guid: 651008cbbac03cf44935bbd1e4cb5557,
     type: 3}
-  playerText: {fileID: 0}
-  canvas: {fileID: 0}
+  playerText: {fileID: 466718266}
+  canvas: {fileID: 1559775895}
 --- !u!4 &1270401176
 Transform:
   m_ObjectHideFlags: 0
