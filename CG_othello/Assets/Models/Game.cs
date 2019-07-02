@@ -21,6 +21,7 @@ namespace Models
         private IPlayer _player2;
 
         public Text playerText;
+        public Text scoreText;
         public GameObject canvas;
         public Camera mainCamera;
 
@@ -84,9 +85,21 @@ namespace Models
                 int scoreBlack = ScoreFor(PlayerColor.Black);
                 int scoreWhite = ScoreFor(PlayerColor.White);
 
-                if (scoreWhite == scoreBlack) playerText.text = "Draw!";
-                else if (scoreBlack > scoreWhite) playerText.text = "BLACK wins!";
-                else playerText.text = "WHITE wins!";
+                if (scoreWhite == scoreBlack)
+                {
+                    playerText.text = "Draw!";
+                    scoreText.text = scoreBlack + " : " + scoreWhite;
+                }
+                else if(scoreBlack > scoreWhite)
+                {
+                    playerText.text = "BLACK wins!";
+                    scoreText.text = scoreBlack + " : " + scoreWhite;
+                }
+                else
+                {
+                    playerText.text = "WHITE wins!";
+                    scoreText.text = scoreWhite + " : " + scoreBlack;
+                }
                 
                 canvas.SetActive(true);
                 return;
