@@ -22,6 +22,7 @@ namespace Models
 
         public Text playerText;
         public GameObject canvas;
+        public Camera mainCamera;
 
         public IPlayer CurrentPlayer { get; private set; }
         public static Game Instance;
@@ -32,6 +33,9 @@ namespace Models
         {
             BoardLength = PlayerPrefs.GetInt("BoardLength");
             if (BoardLength < 6 || BoardLength > 10 || BoardLength % 2 != 0) BoardLength = 8;
+
+            
+            mainCamera.transform.position = GetCameraTransform();
             
             _logicalBoard = new Board.Board(BoardLength);
 
@@ -40,6 +44,20 @@ namespace Models
 
             CurrentPlayer = _player1;
             Instance = this;
+        }
+
+        private Vector3 GetCameraTransform()
+        {
+            Vector3 cameraTransform = new Vector3(2.5f, 7.0f, 1.0f);
+            Vector3 offset = new Vector3(1.0f, 1.0f, 0.75f);
+            int numberOfAdditions = 10 - BoardLength / 2;
+            while (numberOfAdditions != 0)
+            {
+                cameraTransform = cameraTransform + offset;
+                numberOfAdditions--;
+            }
+
+            return cameraTransform;
         }
 
         private IPlayer GetPlayerFor(PlayerColor color)

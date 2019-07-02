@@ -701,6 +701,7 @@ MonoBehaviour:
     type: 3}
   playerText: {fileID: 466718266}
   canvas: {fileID: 1559775895}
+  mainCamera: {fileID: 534669904}
 --- !u!4 &1270401176
 Transform:
   m_ObjectHideFlags: 0
